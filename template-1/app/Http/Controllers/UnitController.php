@@ -23,7 +23,7 @@ class UnitController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $query = Unit::with('users:id,name,email,avatar,nip')->withCount('users')->orderBy('unit_id');
+        $query = Unit::with('users:id,name,email,avatar,nip')->withCount('users')->orderBy('unit_name');
         
         $user = auth()->user();
         if (!$user->hasPermissionTo('units-access-all')) {
@@ -56,16 +56,27 @@ class UnitController extends Controller implements HasMiddleware
         return back()->with('message', 'Pengguna departemen berhasil diperbarui.');
     }
 
+
+    public function create()
+    {
+        return Inertia::render('Units/Create');
+    }
+
+    public function edit(Unit $unit)
+    {
+        $user = auth()->user();
+        abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
+        return Inertia::render('Units/Edit', [
+            'unit' => $unit
+        ]);
+    }
+
     public function store(Request $request)
+
     {
         $validated = $request->validate([
-            'unit_id' => 'required|string|max:10|unique:units',
             'unit_name' => 'required|string|max:255',
-            'is_clinical' => 'boolean',
-            'is_24h' => 'boolean',
-            'scheduling_enabled' => 'boolean',
-            'default_open_slot' => 'integer|min:0|max:47',
-            'default_close_slot' => 'integer|min:0|max:47',
+            
             'description' => 'nullable|string',
         ]);
 
@@ -78,13 +89,8 @@ class UnitController extends Controller implements HasMiddleware
         $user = auth()->user();
         abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
         $validated = $request->validate([
-            'unit_id' => 'required|string|max:10|unique:units,unit_id,' . $unit->id,
             'unit_name' => 'required|string|max:255',
-            'is_clinical' => 'boolean',
-            'is_24h' => 'boolean',
-            'scheduling_enabled' => 'boolean',
-            'default_open_slot' => 'integer|min:0|max:47',
-            'default_close_slot' => 'integer|min:0|max:47',
+            
             'description' => 'nullable|string',
         ]);
 

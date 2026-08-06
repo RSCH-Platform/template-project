@@ -1,0 +1,51 @@
+{
+    "name": "juniyasyos/nexaid-client",
+    "description": "Laravel package for IAM SSO integration with JIT user provisioning",
+    "type": "library",
+    "license": "proprietary",
+    "keywords": [
+        "laravel",
+        "sso",
+        "iam",
+        "jwt",
+        "authentication"
+    ],
+    "authors": [
+        {
+            "name": "Juniyasyos",
+            "email": "juniyasyos@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+        "firebase/php-jwt": "^6.0",
+        "spatie/laravel-permission": "^5.0|^6.0|^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Juniyasyos\\IamClient\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Juniyasyos\\IamClient\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "sbom": "docker run --rm -v $(pwd):/workspace -w /workspace anchore/syft:latest -o cyclonedx-json . > docs/sbom-cyclonedx.json"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Juniyasyos\\IamClient\\IamClientServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

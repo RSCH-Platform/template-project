@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import AppLayout from '@/Layouts/DashboardLayout';
+import Table from '@/Components/Dashboard/Table';
+import Checkbox from '@/Components/Dashboard/Checkbox';
+import Search from '@/Components/Dashboard/Search';
+import Swal from 'sweetalert2';
+import { useAuthorization } from '@/Utils/authorization';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { IconBuilding, IconTrash, IconEdit, IconUsers, IconX } from '@tabler/icons-react';
 import PageContainer from '@/Components/Dashboard/PageContainer';
@@ -10,8 +15,58 @@ import toast from 'react-hot-toast';
 import Button from '@/Components/Dashboard/Button';
 
 export default function Index({ units, all_users }) {
+
+    const { can } = useAuthorization();
+    const canCreateUnits = can("units-create-all");
+    const canUpdateUnits = can("units-update-all") || can("units-update-owned");
+    const canDeleteUnits = can("units-delete-all") || can("units-delete-owned");
+
+    const {
+        data: bulkData,
+        setData: setBulkData,
+        delete: destroy,
+    } = useForm({
+        selectedUnit: [],
+    });
+
+    const setSelectedItem = (e) => {
+        let items = bulkData.selectedUnit;
+        if (items.some((id) => id === e.target.value))
+            items = items.filter((id) => id !== e.target.value);
+        else items.push(e.target.value);
+        setBulkData("selectedUnit", items);
+    };
+
+    const deleteData = async (id) => {
+        Swal.fire({
+            title: "Hapus Departemen?",
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#64748b",
+            confirmButtonText: "Ya, Hapus!",
+            cancelButtonText: "Batal",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                destroy(route("units.destroy", id));
+                Swal.fire({
+                    title: "Berhasil!",
+                    text: "Data berhasil dihapus!",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+                setBulkData("selectedUnit", []);
+            }
+        });
+    };
+
     const [selectedUnit, setSelectedUnit] = useState(null);
+
     const [showUsersModal, setShowUsersModal] = useState(false);
+
+
 
     const { data, setData, post, processing, reset } = useForm({
         user_ids: [],
@@ -40,85 +95,116 @@ export default function Index({ units, all_users }) {
             description={`${units?.total || units?.data?.length || 0} departemen terdaftar`}
             icon={<IconBuilding size={28} className="text-primary-500" />}
             actionLabel="Tambah Departemen"
-            // actionUrl={route("units.create")} // uncomment if you create the create route
-            canCreate={false} // set to true once create is implemented
+            actionUrl={route("units.create")}
+            canCreate={canCreateUnits}
+            actions={
+                canDeleteUnits && bulkData.selectedUnit.length > 0 && (
+                    <Button
+                        type={"bulk"}
+                        icon={<IconTrash size={18} />}
+                        className={"bg-danger-500 hover:bg-danger-600 text-white"}
+                        label={`Hapus ${bulkData.selectedUnit.length}`}
+                        onClick={() => deleteData(bulkData.selectedUnit)}
+                    />
+                )
+            }
         >
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-                        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase dark:border-slate-800 dark:bg-slate-800/50">
-                            <tr>
-                                <th className="px-4 py-3">Kode</th>
-                                <th className="px-4 py-3">Nama Departemen</th>
-                                <th className="px-4 py-3 text-center">Jml Pengguna</th>
-                                <th className="px-4 py-3">24 Jam</th>
-                                <th className="px-4 py-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                            {units?.data && units.data.length > 0 ? (
-                                units.data.map((unit) => (
-                                    <tr key={unit.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{unit.unit_id}</td>
-                                        <td className="px-4 py-3">{unit.unit_name}</td>
-                                        <td className="px-4 py-3 text-center">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-info-50 text-info-700 dark:bg-info-900/30 dark:text-info-400 text-xs font-semibold">
-                                                <IconUsers size={14} />
-                                                {unit.users_count || 0}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {unit.is_24h ? (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400 text-xs font-medium">Ya</span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-xs font-medium">Tidak</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <button 
-                                                    onClick={() => openUsersModal(unit)}
-                                                    className="p-2 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition-colors"
-                                                    title="Kelola Pengguna"
-                                                >
-                                                    <IconUsers size={18} />
-                                                </button>
-                                                <button className="p-2 text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-500/10 rounded-lg transition-colors">
-                                                    <IconEdit size={18} />
-                                                </button>
-                                                <button 
-                                                    className="p-2 text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-500/10 rounded-lg transition-colors"
-                                                    onClick={() => {
-                                                        if(confirm('Hapus departemen ini?')) router.delete(route('units.destroy', unit.id));
-                                                    }}
-                                                >
-                                                    <IconTrash size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="4" className="px-4 py-12 text-center">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                                                <IconBuilding size={32} className="text-slate-400" strokeWidth={1.5} />
-                                            </div>
-                                            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-1">
-                                                Belum Ada Departemen
-                                            </h3>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">
-                                                Departemen tidak ditemukan.
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+            
+            {/* Toolbar */}
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <div className="w-full sm:w-80">
+                    <Search
+                        url={route("units.index")}
+                        placeholder="Cari departemen..."
+                    />
                 </div>
             </div>
+
+            <Table.Card title="Daftar Departemen" icon={<IconBuilding size={20} />}>
+                <Table>
+                    <Table.Thead>
+                        <tr>
+                            <Table.Th className={"w-10"}>
+                                {canDeleteUnits && units?.data?.length > 0 && (
+                                    <Checkbox
+                                        value="all"
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setBulkData("selectedUnit", units.data.map(u => u.id.toString()));
+                                            } else {
+                                                setBulkData("selectedUnit", []);
+                                            }
+                                        }}
+                                        checked={bulkData.selectedUnit.length === units.data.length && units.data.length > 0}
+                                    />
+                                )}
+                            </Table.Th>
+                            <Table.Th className={"w-10"}>No</Table.Th>
+                            <Table.Th>Nama Departemen</Table.Th>
+                            <Table.Th className="text-center">Jml Pengguna</Table.Th>
+                            
+                            <Table.Th></Table.Th>
+                        </tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                        {units?.data && units.data.length > 0 ? (
+                            units.data.map((unit, i) => (
+                                <tr key={unit.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <Table.Td>
+                                        {canDeleteUnits && (
+                                            <Checkbox
+                                                value={unit.id}
+                                                onChange={setSelectedItem}
+                                                checked={bulkData.selectedUnit.includes(unit.id.toString())}
+                                            />
+                                        )}
+                                    </Table.Td>
+                                    <Table.Td className="text-center">
+                                        {++i + (units.current_page - 1) * units.per_page}
+                                    </Table.Td>
+                                    <Table.Td>{unit.unit_name}</Table.Td>
+                                    <Table.Td className="text-center">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-info-50 text-info-700 dark:bg-info-900/30 dark:text-info-400 text-xs font-semibold">
+                                            <IconUsers size={14} />
+                                            {unit.users_count || 0}
+                                        </span>
+                                    </Table.Td>
+                                    
+                                    <Table.Td>
+                                        <div className="flex justify-end gap-2">
+                                            <Button 
+                                                type="modal"
+                                                onClick={(e) => { e.preventDefault(); openUsersModal(unit); }}
+                                                className="border bg-primary-100 border-primary-200 text-primary-600 hover:bg-primary-200 dark:bg-primary-900/50 dark:border-primary-800 dark:text-primary-400"
+                                                icon={<IconUsers size={16} strokeWidth={1.5} />}
+                                            />
+                                            {canUpdateUnits && (
+                                                <Button 
+                                                    type="edit"
+                                                    href={route("units.edit", unit.id)}
+                                                    className="border bg-warning-100 border-warning-200 text-warning-600 hover:bg-warning-200 dark:bg-warning-900/50 dark:border-warning-800 dark:text-warning-400"
+                                                    icon={<IconEdit size={16} strokeWidth={1.5} />}
+                                                />
+                                            )}
+                                            {canDeleteUnits && (
+                                                <Button 
+                                                    type="button"
+                                                    onClick={() => deleteData(unit.id)}
+                                                    className="border bg-danger-100 border-danger-200 text-danger-600 hover:bg-danger-200 dark:bg-danger-900/50 dark:border-danger-800 dark:text-danger-400"
+                                                    icon={<IconTrash size={16} strokeWidth={1.5} />}
+                                                />
+                                            )}
+                                        </div>
+                                    </Table.Td>
+                                </tr>
+                            ))
+                        ) : (
+                            <Table.Empty colSpan={5} message="Departemen tidak ditemukan." />
+                        )}
+                    </Table.Tbody>
+                </Table>
+            </Table.Card>
+
             
             {units?.last_page !== 1 && <Pagination links={units?.links} />}
 

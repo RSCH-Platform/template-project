@@ -1,0 +1,85 @@
+<?php
+
+namespace Juniyasyos\IamClient\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
+use Juniyasyos\IamClient\Services\UserApplicationsService;
+use Juniyasyos\IamClient\Support\IamConfig;
+
+class LogoutController extends Controller
+{
+    /**
+     * Handle user logout.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function __invoke(Request $request, string $guard = 'web')
+    {
+        $guardName = IamConfig::guardName($guard);
+        $guardInstance = Auth::guard($guardName);
+
+        $userId = $guardInstance->id();
+        $sessionId = session()->getId();
+
+        Log::info('SSO logout initiated', [
+            'action' => 'logout_initiated',
+            'method' => __METHOD__,
+            'url' => $request->fullUrl(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'guard' => $guardName,
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+
+        // Clear application cache before logout
+        UserApplicationsService::clearUserAppCache($userId);
+        UserApplicationsService::clearSessionAppCache();
+
+        $guardInstance->logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        request()->session()->forget('iam');
+
+        Log::info('SSO logout completed', [
+            'action' => 'logout_completed',
+            'method' => __METHOD__,
+            'url' => $request->fullUrl(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'previous_user_id' => $userId,
+            'old_session_id' => $sessionId,
+            'new_session_id' => session()->getId(),
+            'guard' => $guardName,
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+
+        // Redirect the user to the IAM server's `/logout` endpoint so the IAM
+        // session is also destroyed. The IAM server will then trigger its logout
+        // chain, which includes calling the client `/iam/logout` endpoint.
+        $iamBase = trim((string) IamConfig::baseUrl());
+
+        if ($iamBase === '') {
+            // Fallback: if IAM URL is not configured, fall back to the legacy
+            // behaviour of redirecting locally.
+            $redirectRouteName = IamConfig::logoutRedirectRoute($guard);
+
+            if ($redirectRouteName && Route::has($redirectRouteName)) {
+                return redirect()->route($redirectRouteName)->with('message', 'You have been logged out successfully.');
+            }
+
+            return redirect(IamConfig::guardRedirect($guard))->with('message', 'You have been logged out successfully.');
+        }
+
+        $iamLogoutUrl = rtrim($iamBase, '/') . '/logout';
+
+        return redirect()->away($iamLogoutUrl);
+    }
+}

@@ -3,11 +3,16 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "firebase/php-jwt": "^6.11",
         "inertiajs/inertia-laravel": "^2.0",
+        "juniyasyos/nexaid-client": "@dev",
         "lab404/laravel-impersonate": "^1.7",
         "laravel/framework": "^13.8",
         "laravel/sanctum": "^4.0",
@@ -85,8 +90,28 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "abandoned": "ignore"
+        },
+        "policy": {
+            "advisories": {
+                "ignore-id": [
+                    "PKSA-y2cr-5h3j-g3ys",
+                    "GHSA-y2cr-5h3j-g3ys"
+                ]
+            }
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/nexaid-client",
+            "options": {
+                "symlink": true
+            }
+        }
+    ]
 }

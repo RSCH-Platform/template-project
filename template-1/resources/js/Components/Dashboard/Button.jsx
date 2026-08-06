@@ -12,6 +12,7 @@ export default function Button({
     added,
     url,
     id,
+    processing,
     ...props
 }) {
     const { delete: destroy } = useForm();
@@ -77,7 +78,8 @@ export default function Button({
             {type === "submit" && (
                 <button
                     type="submit"
-                    className={`${baseStyles} ${sizeStyles} ${className}`}
+                    disabled={processing}
+                    className={`${baseStyles} ${sizeStyles} ${className} ${processing ? 'opacity-70 cursor-not-allowed' : ''}`}
                     {...props}
                 >
                     {icon}{" "}

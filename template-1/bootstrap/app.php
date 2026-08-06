@@ -22,6 +22,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
+
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if (! $request->expectsJson()) {
+                if (config('iam.enabled', false) || env('USE_SSO', false)) {
+                    return route('sso.login');
+                }
+                return route('login.form');
+            }
+            return null;
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

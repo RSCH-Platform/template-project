@@ -1,16 +1,43 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Middleware\RedirectIfSsoDisabled;
+use Juniyasyos\IamClient\Http\Controllers\SsoCallbackController;
+use Juniyasyos\IamClient\Http\Controllers\SsoLoginRedirectController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    
+    $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+    return $ssoEnabled 
+        ? redirect()->route('sso.login') 
+        : redirect()->route('login.form');
 });
 
+// Unified login entrypoint
+Route::get('/login', function() {
+    $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+    return $ssoEnabled 
+        ? redirect()->route('sso.login') 
+        : redirect()->route('login.form');
+})->name('login');
+
+// SSO Routes (hanya aktif saat IAM_ENABLED=true)
+Route::middleware([RedirectIfSsoDisabled::class])->group(function () {
+    Route::get('/sso/login', SsoLoginRedirectController::class)->name('sso.login');
+    Route::get('/callback', SsoCallbackController::class)->name('sso.callback');
+});
+
+// SSO-aware Logout
+Route::post('/logout', LogoutController::class)->name('logout');
+
 Route::get('/dashboard', function () {
-    
     // For Chart.js - count users by role
     $roles = \Spatie\Permission\Models\Role::withCount('users')->get();
     $chartLabels = $roles->pluck('name');

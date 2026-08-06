@@ -14,19 +14,25 @@ class UnitController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:units-access', only: ['index']),
-            new Middleware('permission:units-create', only: ['create', 'store']),
-            new Middleware('permission:units-update', only: ['edit', 'update']),
-            new Middleware('permission:units-delete', only: ['destroy']),
+            new Middleware('permission:units-access-all|units-access-owned', only: ['index']),
+            new Middleware('permission:units-create-all', only: ['create', 'store']),
+            new Middleware('permission:units-update-all|units-update-owned', only: ['edit', 'update', 'syncUsers']),
+            new Middleware('permission:units-delete-all|units-delete-owned', only: ['destroy']),
         ];
     }
 
     public function index()
     {
-        $units = Unit::with('users:id,name,email,avatar,nip')
-                    ->withCount('users')
-                    ->orderBy('unit_id')
-                    ->paginate(10);
+        $query = Unit::with('users:id,name,email,avatar,nip')->withCount('users')->orderBy('unit_id');
+        
+        $user = auth()->user();
+        if (!$user->hasPermissionTo('units-access-all')) {
+            $query->whereHas('users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        }
+        
+        $units = $query->paginate(10);
                     
         $all_users = \App\Models\User::select('id', 'name', 'email', 'avatar', 'nip')->get();
 
@@ -38,6 +44,8 @@ class UnitController extends Controller implements HasMiddleware
 
     public function syncUsers(Request $request, Unit $unit)
     {
+        $user = auth()->user();
+        abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
         $validated = $request->validate([
             'user_ids' => 'array',
             'user_ids.*' => 'integer|exists:users,id'
@@ -67,6 +75,8 @@ class UnitController extends Controller implements HasMiddleware
 
     public function update(Request $request, Unit $unit)
     {
+        $user = auth()->user();
+        abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
         $validated = $request->validate([
             'unit_id' => 'required|string|max:10|unique:units,unit_id,' . $unit->id,
             'unit_name' => 'required|string|max:255',
@@ -84,6 +94,8 @@ class UnitController extends Controller implements HasMiddleware
 
     public function destroy(Unit $unit)
     {
+        $user = auth()->user();
+        abort_if(!$user->hasPermissionTo('units-delete-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
         $unit->delete();
         return redirect()->route('units.index')->with('message', 'Departemen berhasil dihapus.');
     }

@@ -24,7 +24,9 @@ class RoleSeeder extends Seeder
         $kepalaDepartemenRole = Role::firstOrCreate(['name' => 'kepala-departemen']);
         $kepalaDepartemenRole->syncPermissions([
             'dashboard-access',
-            'units-access',
+            'units-access-owned',
+            'units-update-owned',
+            'units-delete-owned',
             'users-access',
         ]);
 

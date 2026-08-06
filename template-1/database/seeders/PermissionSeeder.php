@@ -21,9 +21,13 @@ class PermissionSeeder extends Seeder
         $create('dashboard-access');
 
 
-        // Units CRUD
-        $create('units-access'); $create('units-create');
-        $create('units-update'); $create('units-delete');
+        // Units CRUD (All)
+        $create('units-access-all'); $create('units-create-all');
+        $create('units-update-all'); $create('units-delete-all');
+
+        // Units CRUD (Owned)
+        $create('units-access-owned'); $create('units-update-owned'); 
+        $create('units-delete-owned');
 
 
 

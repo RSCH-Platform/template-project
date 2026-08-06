@@ -49,7 +49,7 @@ export default function useMenu() {
     const canRolesCreate = useHasAnyPermission(["roles-create"]);
     const canUsers = useHasAnyPermission(["users-access"]);
     const canUsersCreate = useHasAnyPermission(["users-create"]);
-    const canUnits = useHasAnyPermission(["units-access"]);
+    const canUnits = useHasAnyPermission(["units-access-all", "units-access-owned"]);
 
     // define menu navigations
     const menuNavigation = [

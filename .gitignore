@@ -1,0 +1,19 @@
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Explicitly ignore common heavy folders in all subdirectories if needed,
+# though each template should generally manage its own ignores.
+*/node_modules/
+*/vendor/
+*/.env
+*/public/build/
+*/public/hot
+*/storage/framework/
+*/storage/logs/

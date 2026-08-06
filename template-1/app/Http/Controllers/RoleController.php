@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Http\Controllers;
+
+
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+class RoleController extends Controller
+{
+    public function __construct()
+    {
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        // get all role data
+        $roles = Role::query()
+            ->with('permissions')
+            ->when(request()->search, fn ($query) => $query->where('name', 'like', '%'.request()->search.'%'))
+            ->select('id', 'name')
+            ->latest()
+            ->paginate(7)
+            ->withQueryString();
+
+        // get all permission data
+        $permissions = Permission::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        // render view
+        return Inertia::render('Dashboard/Roles/Index', [
+            'roles' => $roles,
+            'permissions' => $permissions,
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:roles,name',
+            'selectedPermission' => 'required|array',
+        ]);
+
+        // create new role data
+        $role = Role::create(['name' => $request->name]);
+
+        // give permissions to role
+        $role->givePermissionTo($request->selectedPermission);
+
+        // render view
+        return back();
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Role $role)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:roles,name,'.$role->id,
+            'selectedPermission' => 'required|array',
+        ]);
+
+        // update role data
+        $role->update(['name' => $request->name]);
+
+        // sync role permissions
+        $role->syncPermissions($request->selectedPermission);
+
+        // render view
+        return back();
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Role $role)
+    {
+        // delete role data
+        $role->delete();
+
+        // render view
+        return back();
+    }
+}

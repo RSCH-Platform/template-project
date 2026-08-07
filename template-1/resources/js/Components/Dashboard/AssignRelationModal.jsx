@@ -109,9 +109,9 @@ export default function AssignRelationModal({
             onClose={handleReset}
             title={title}
             type="slide-over"
-            maxWidth="3xl"
+            maxWidth="2xl"
         >
-            <form onSubmit={onSubmit} className="flex h-full flex-col">
+            <div className="flex h-full flex-col">
                 <div className="flex-1 space-y-6 overflow-y-auto dashboard-scrollbar p-1">
                     {/* Select Input Section */}
                     <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
@@ -122,15 +122,17 @@ export default function AssignRelationModal({
                             multiple={true}
                             placeholder={selectPlaceholder}
                             label={selectLabel}
+                            disabled={processing}
                         />
                     </div>
                     
                     {/* Table Section */}
                     {columns && columns.length > 0 && (
-                        <div className="space-y-3">
+                        <div className="space-y-3 pb-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                                     {tableTitle} ({previewItems.length})
+                                    {processing && <IconRefresh className="animate-spin text-primary-500" size={16} />}
                                 </h3>
                                 
                                 <div className="flex items-center gap-2">
@@ -138,6 +140,7 @@ export default function AssignRelationModal({
                                         <Button
                                             type="button"
                                             onClick={handleBulkDetach}
+                                            disabled={processing}
                                             icon={<IconTrash size={16} />}
                                             className="bg-danger-500 hover:bg-danger-600 text-white text-xs py-1.5"
                                         >
@@ -167,6 +170,7 @@ export default function AssignRelationModal({
                                                 <Checkbox
                                                     checked={displayItems.length > 0 && tableSelection.length === displayItems.length}
                                                     onChange={handleSelectAll}
+                                                    disabled={processing}
                                                 />
                                             </Table.Th>
                                             <Table.Th className="w-12 text-center">No</Table.Th>
@@ -198,6 +202,7 @@ export default function AssignRelationModal({
                                                             <Checkbox
                                                                 checked={isSelected}
                                                                 onChange={() => handleSelectRow(item[valueKey])}
+                                                                disabled={processing}
                                                             />
                                                         </Table.Td>
                                                         <Table.Td className="text-center">{index + 1}</Table.Td>
@@ -214,24 +219,7 @@ export default function AssignRelationModal({
                         </div>
                     )}
                 </div>
-
-                <div className="flex flex-shrink-0 justify-end gap-3 border-t dark:border-slate-800 pt-4 mt-4">
-                    <Button 
-                        type="button" 
-                        onClick={handleReset}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300"
-                    >
-                        Batal
-                    </Button>
-                    <Button 
-                        type="submit" 
-                        processing={processing}
-                        className="bg-primary-600 hover:bg-primary-700 text-white"
-                    >
-                        Simpan Perubahan
-                    </Button>
-                </div>
-            </form>
+            </div>
         </Modal>
     );
 }

@@ -64,22 +64,23 @@ export default function Index({ units, all_users }) {
 
 
 
-    const { data, setData, post, processing, reset } = useForm({
-        user_ids: [],
-    });
+    const [syncProcessing, setSyncProcessing] = useState(false);
+    const [selectedUserIds, setSelectedUserIds] = useState([]);
 
     const openUsersModal = (unit) => {
         setSelectedUnit(unit);
-        setData('user_ids', unit.users ? unit.users.map(u => u.id) : []);
+        setSelectedUserIds(unit.users ? unit.users.map(u => u.id) : []);
         setShowUsersModal(true);
     };
 
-    const submitUsers = (e) => {
-        e.preventDefault();
-        post(route('units.users.sync', selectedUnit.id), {
+    const handleSyncUsers = (newIds) => {
+        setSelectedUserIds(newIds);
+        setSyncProcessing(true);
+        router.post(route('units.users.sync', selectedUnit.id), { user_ids: newIds }, {
             preserveScroll: true,
+            preserveState: true,
+            onFinish: () => setSyncProcessing(false),
             onSuccess: () => {
-                setShowUsersModal(false);
                 toast.success('Pengguna departemen berhasil diperbarui');
             },
         });
@@ -211,11 +212,10 @@ export default function Index({ units, all_users }) {
                 show={showUsersModal}
                 onClose={() => setShowUsersModal(false)}
                 title={selectedUnit ? `Kelola Pengguna - ${selectedUnit.unit_name}` : 'Kelola Pengguna'}
-                onSubmit={submitUsers}
-                processing={processing}
+                processing={syncProcessing}
                 options={all_users || []}
-                selectedValues={data.user_ids}
-                onChangeValues={(val) => setData('user_ids', val)}
+                selectedValues={selectedUserIds}
+                onChangeValues={handleSyncUsers}
                 selectLabel="Daftar Pengguna Departemen"
                 selectPlaceholder="Cari dan pilih pengguna..."
                 tableTitle="Pengguna Terdaftar"

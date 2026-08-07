@@ -139,7 +139,7 @@ class UserController extends Controller implements HasMiddleware
     {
         $ids = explode(',', $id);
         
-        User::whereIn('id', $ids)->delete();
+        $this->service->destroy($ids);
 
         // render view
         return back();

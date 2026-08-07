@@ -14,6 +14,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use App\Services\RoleService;
 
 class RoleController extends Controller implements HasMiddleware
 {
@@ -27,7 +28,7 @@ class RoleController extends Controller implements HasMiddleware
         ];
     }
 
-    public function __construct()
+    public function __construct(private RoleService $service)
     {
     }
 
@@ -61,15 +62,9 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function store(StoreRoleRequest $request)
     {
-
-        // create new role data
-        $role = Role::create(['name' => $request->name]);
-
-        // give permissions to role
-        $role->givePermissionTo($request->selectedPermission);
-
-        // render view
-        return back();
+        $this->service->store($request->validated());
+        
+        return back()->with('message', 'Akses Group berhasil ditambahkan.');
     }
 
     /**
@@ -77,24 +72,19 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
+        $this->service->update($role, $request->validated());
 
-        // update role data
-        $role->update(['name' => $request->name]);
-
-        // sync role permissions
-        $role->syncPermissions($request->selectedPermission);
-
-        // render view
-        return back();
+        return back()->with('message', 'Akses Group berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Role $role)
+    public function destroy($id)
     {
-        // delete role data
-        $role->delete();
+        $ids = explode(',', $id);
+        
+        $this->service->destroy($ids);
 
         // render view
         return back();

@@ -64,4 +64,12 @@ class UserService
 
         return $user;
     }
+
+    public function destroy(array $ids): void
+    {
+        $users = User::whereIn('id', $ids)->get();
+        foreach ($users as $user) {
+            $user->delete(); // This triggers the Observer
+        }
+    }
 }

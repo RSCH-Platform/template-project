@@ -14,9 +14,13 @@ use App\Http\Resources\UnitResource;
 use App\Http\Resources\UserResource;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
+use App\Services\UnitService;
 
 class UnitController extends Controller implements HasMiddleware
 {
+    public function __construct(private UnitService $service)
+    {
+    }
     public static function middleware(): array
     {
         return [
@@ -57,7 +61,7 @@ class UnitController extends Controller implements HasMiddleware
         $this->authorize('update', $unit);
         $validated = $request->validated();
 
-        $unit->users()->sync($validated['user_ids'] ?? []);
+        $this->service->syncUsers($unit, $validated['user_ids'] ?? []);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -84,21 +88,22 @@ class UnitController extends Controller implements HasMiddleware
 
     public function store(UnitRequest $request)
     {
-        Unit::create($request->validated());
+        $this->service->store($request->validated());
         return back()->with('message', 'Departemen berhasil ditambahkan.');
     }
 
     public function update(UnitRequest $request, Unit $unit)
     {
         $this->authorize('update', $unit);
-        $unit->update($request->validated());
+        $this->service->update($unit, $request->validated());
         return back()->with('message', 'Departemen berhasil diperbarui.');
     }
 
     public function destroy(Unit $unit)
     {
         $this->authorize('delete', $unit);
-        $unit->delete();
+        $this->service->destroy([$unit->id]);
+
         return back()->with('message', 'Departemen berhasil dihapus.');
     }
 }

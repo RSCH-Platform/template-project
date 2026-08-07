@@ -31,10 +31,8 @@ class UnitController extends Controller implements HasMiddleware
                 $q->where('users.id', $user->id);
             });
         }
-        $perPage = request('per_page', 10);
-        $perPage = $perPage === 'all' ? Unit::count() : $perPage;
         
-        $units = $query->paginate($perPage)->withQueryString();
+        $units = $this->dynamicPaginate($query);
                     
         $all_users = \App\Models\User::select('id', 'name', 'email', 'avatar', 'nip')->get();
 

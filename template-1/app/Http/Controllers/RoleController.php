@@ -19,17 +19,14 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = request('per_page', 10);
-        $perPage = $perPage === 'all' ? Role::count() : $perPage;
-
         // get all role data
-        $roles = Role::query()
+        $query = Role::query()
             ->with('permissions')
-            ->when(request()->search, fn ($query) => $query->where('name', 'like', '%'.request()->search.'%'))
+            ->when(request()->search, fn ($q) => $q->where('name', 'like', '%'.request()->search.'%'))
             ->select('id', 'name')
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+            ->latest();
+            
+        $roles = $this->dynamicPaginate($query);
 
         // get all permission data
         $permissions = Permission::query()

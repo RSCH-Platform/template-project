@@ -21,5 +21,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        if (request()->is('api/iam/push-*') || request()->is('api/iam/sync-*')) {
+            set_time_limit(0);
+        }
     }
 }

@@ -16,9 +16,9 @@ use Lab404\Impersonate\Models\Impersonate;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, HasRoles, Notifiable, Impersonate {
-        hasPermissionTo as protected spatieHasPermissionTo;
-        checkPermissionTo as protected spatieCheckPermissionTo;
+    use HasFactory, Notifiable, Impersonate;
+    use HasRoles {
+        syncRoles as protected traitSyncRoles;
     }
     use MustVerifyEmailTrait;
 
@@ -58,12 +58,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => 'string',
-            'is_supervisor' => 'boolean',
-            'target_hours_per_week' => 'float',
-            'max_hours_per_day' => 'float',
-            'max_hours_per_week' => 'float',
-            'min_rest_hours' => 'float',
-            'hourly_cost' => 'float',
         ];
     }
 
@@ -75,6 +69,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function units(): BelongsToMany
     {
         return $this->belongsToMany(Unit::class, 'unit_user')
+            ->withTimestamps();
+    }
+
+    public function unitKerjas(): BelongsToMany
+    {
+        return $this->belongsToMany(Unit::class, 'unit_user', 'user_id', 'unit_id')
             ->withTimestamps();
     }
 
@@ -112,10 +112,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->profession_code === 'NURSE';
     }
 
-    public function isKepala(): bool
-    {
-        return $this->hasRole('kepala-departemen');
-    }
+
 
     /**
      * Accessor for avatar URL.
@@ -153,31 +150,7 @@ class User extends Authenticatable implements MustVerifyEmail
         });
     }
 
-    /**
-     * check role isSuperAdmin
-     */
-    public function isSuperAdmin()
-    {
-        return $this->hasRole('super-admin');
-    }
 
-    public function hasPermissionTo($permission, $guardName = null): bool
-    {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
-
-        return $this->spatieHasPermissionTo($permission, $guardName);
-    }
-
-    public function checkPermissionTo($permission, $guardName = null): bool
-    {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
-
-        return $this->spatieCheckPermissionTo($permission, $guardName);
-    }
 
     /**
      * Determine if the user has verified their email address.
@@ -195,11 +168,28 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function canImpersonate()
     {
-        return $this->isSuperAdmin();
+        return $this->hasPermissionTo('impersonate');
     }
 
     public function canBeImpersonated()
     {
-        return !$this->isSuperAdmin();
+        return ! $this->hasPermissionTo('impersonate');
+    }
+
+    /**
+     * Override syncRoles to auto-create missing roles from SSO push
+     */
+    public function syncRoles(...$roles)
+    {
+        $roleNames = collect($roles)->flatten()->filter(fn($role) => is_string($role));
+        
+        foreach ($roleNames as $roleName) {
+            \Spatie\Permission\Models\Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => $this->getDefaultGuardName()
+            ]);
+        }
+
+        return $this->traitSyncRoles(...$roles);
     }
 }

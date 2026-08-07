@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import AppLayout from '@/Layouts/DashboardLayout';
-import Table from '@/Components/Dashboard/Table';
-import Checkbox from '@/Components/Dashboard/Checkbox';
-import Search from '@/Components/Dashboard/Search';
 import Swal from 'sweetalert2';
 import { useAuthorization } from '@/Utils/authorization';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { IconBuilding, IconTrash, IconEdit, IconUsers, IconX } from '@tabler/icons-react';
-import PageContainer from '@/Components/Dashboard/PageContainer';
-import Pagination from '@/Components/Dashboard/Pagination';
-import Modal from '@/Components/Dashboard/Modal';
-import SearchableSelect from '@/Components/Dashboard/SearchableSelect';
 import toast from 'react-hot-toast';
-import Button from '@/Components/Dashboard/Button';
-import PerPage from '@/Components/Dashboard/PerPage';
+import {
+    Table, Checkbox, Search, PageContainer, Pagination, 
+    SearchableSelect, Button, PerPage, AssignRelationModal 
+} from '@/Components/Dashboard';
 
 export default function Index({ units, all_users }) {
 
@@ -212,60 +207,28 @@ export default function Index({ units, all_users }) {
             
             {units?.last_page !== 1 && <Pagination links={units?.links} />}
 
-            <Modal 
-                show={showUsersModal} 
+            <AssignRelationModal
+                show={showUsersModal}
                 onClose={() => setShowUsersModal(false)}
                 title={selectedUnit ? `Kelola Pengguna - ${selectedUnit.unit_name}` : 'Kelola Pengguna'}
-                type="slide-over"
-            >
-                <form onSubmit={submitUsers} className="flex h-full flex-col">
-                    <div className="flex-1 space-y-6">
-                        <div>
-                            <SearchableSelect
-                                options={all_users || []}
-                                selected={data.user_ids}
-                                onChange={(val) => setData('user_ids', val)}
-                                multiple={true}
-                                placeholder="Cari dan pilih pengguna..."
-                                label="Daftar Pengguna Departemen"
-                            />
+                onSubmit={submitUsers}
+                processing={processing}
+                options={all_users || []}
+                selectedValues={data.user_ids}
+                onChangeValues={(val) => setData('user_ids', val)}
+                selectLabel="Daftar Pengguna Departemen"
+                selectPlaceholder="Cari dan pilih pengguna..."
+                currentItems={selectedUnit?.users || []}
+                currentItemsLabel="Pengguna Terdaftar Saat Ini:"
+                renderCurrentItem={(u) => (
+                    <div key={u.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm">
+                        <div className="w-6 h-6 rounded-full bg-primary-200 dark:bg-primary-900 flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-300 overflow-hidden">
+                            {u.avatar ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
                         </div>
-                        
-                        {selectedUnit?.users && selectedUnit.users.length > 0 && (
-                            <div className="mt-4">
-                                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pengguna Terdaftar Saat Ini:</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedUnit.users.map(u => (
-                                        <div key={u.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm">
-                                            <div className="w-6 h-6 rounded-full bg-primary-200 dark:bg-primary-900 flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-300 overflow-hidden">
-                                                {u.avatar ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
-                                            </div>
-                                            <span className="text-slate-700 dark:text-slate-300 font-medium">{u.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        <span className="text-slate-700 dark:text-slate-300 font-medium">{u.name}</span>
                     </div>
-
-                    <div className="flex flex-shrink-0 justify-end gap-3 border-t dark:border-slate-800 pt-4 mt-6">
-                        <Button 
-                            type="button" 
-                            onClick={() => setShowUsersModal(false)}
-                            className="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300"
-                        >
-                            Batal
-                        </Button>
-                        <Button 
-                            type="submit" 
-                            processing={processing}
-                            className="bg-primary-600 hover:bg-primary-700 text-white"
-                        >
-                            Simpan Perubahan
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
+                )}
+            />
         </PageContainer>
     );
 }

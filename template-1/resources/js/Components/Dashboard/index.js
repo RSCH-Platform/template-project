@@ -1,5 +1,6 @@
 export { default as ActionButtons } from './ActionButtons';
 export { default as AppSwitcher } from './AppSwitcher';
+export { default as AssignRelationModal } from './AssignRelationModal';
 export { default as AuthDropdown } from './AuthDropdown';
 export { default as AvatarUploader } from './AvatarUploader';
 export { default as Badge } from './Badge';

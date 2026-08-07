@@ -19,6 +19,7 @@ class UnitResource extends JsonResource
             'unit_name' => $this->unit_name,
             'description' => $this->description,
             'created_at' => $this->created_at,
+            'users_count' => $this->whenCounted('users'),
             'users' => UserResource::collection($this->whenLoaded('users')),
         ];
     }

@@ -1,94 +1,90 @@
-# Panduan Penggunaan dan Pengembangan (Project Template 1)
+# Buku Panduan Pengembang (Technical Playbook)
 
-Dokumentasi ini menjelaskan struktur fitur inti dari sistem, mulai dari manajemen otentikasi hingga pengelolaan entitas pengguna dan departemen (unit kerja). Template ini dibangun menggunakan stack **Laravel, Inertia.js, React, dan Tailwind CSS (@headlessui/react)**.
+Dokumen ini adalah standar operasi (*SOP*) wajib bagi pengembang (*developer*) yang akan memodifikasi atau menambah fitur baru di dalam sistem. Aplikasi ini dirancang tidak hanya untuk berfungsi, melainkan untuk memiliki arsitektur jangka panjang yang bebas dari "kode spageti" serta performa *UI* layaknya sebuah aplikasi *Single Page Application* (SPA) mutakhir.
 
 ## Daftar Isi
-1. [Otentikasi (Login & NIP/Email)](#otentikasi)
-2. [Dashboard & Fitur Impersonate](#dashboard--fitur-impersonate)
-3. [Manajemen Peran (Role) dan Hak Akses (Permission)](#peran-dan-hak-akses)
-4. [Pengguna (User)](#pengguna-user)
-5. [Departemen / Unit Kerja](#departemen--unit-kerja)
-6. [Panduan Pengembangan (Development)](#panduan-pengembangan)
+1. [Arsitektur Berlapis (Layered Architecture)](#1-arsitektur-berlapis-layered-architecture)
+2. [Sistem Pencarian & Filter Cerdas](#2-sistem-pencarian--filter-cerdas-spatie-querybuilder)
+3. [Keamanan & API Resource](#3-keamanan-data--api-resource)
+4. [Optimasi Performa UI (Inertia & Axios)](#4-optimasi-performa-ui)
+5. [Komponen-komponen UI Siap Pakai](#5-komponen-ui-siap-pakai)
 
 ---
 
-### Otentikasi
-Sistem otentikasi (login) pada sistem ini dirancang fleksibel untuk mendukung dua opsi pengenal utama: **Email** atau **NIP** (Nomor Induk Pegawai).
+## 1. Arsitektur Berlapis (Layered Architecture)
+Sistem ini dengan sengaja tidak membebankan interaksi basis data pada tingkat `Controller`. Seluruh alur (*flow*) data harus mematuhi hierarki berikut:
 
-* **Konfigurasi Login**: Anda dapat mengatur apakah pengguna harus login menggunakan Email atau NIP dengan mengubah parameter di dalam `config/auth.php` (biasanya melalui `.env`). 
-* NIP dalam sistem ini diformat secara khusus, misalnya `0000.00000` atau `1261.78612`.
-* **Proses Login**:
-  - Request akan divalidasi dan dicocokkan berdasarkan tipe yang aktif (`email` atau `nip`).
-  - Apabila berhasil, sesi pengguna dibuat dan diarahkan ke Dashboard.
+* **Controller** (`app/Http/Controllers`): Hanyalah pintu masuk untuk HTTP *Request*. Ia bertanggung jawab memanggil validasi (Form Request), memanggil `Service` untuk memproses logika, dan merender tampilan (`Inertia::render` atau `response()->json()`).
+  > **❌ JANGAN** menuliskan `$user->update()` atau logika bisnis lain secara langsung di Controller.
+* **Service** (`app/Services`): Berisi seluruh logika bisnis aplikasi. Misalnya pembuatan akun baru dengan proses penyimpanan *file avatar*, hingga melampirkan (*attach*) relasi `Roles` & `Units`, semuanya harus dilakukan di kelas *Service* (`UserService.php`).
+* **Model** (`app/Models`): Hanyalah representasi data dan pendefinisian relasi (`belongsTo`, `hasMany`).
+* **Observer** (`app/Observers`): Penjaga aktivitas *side-effects*. Misalnya, ketika akun *User* dihapus secara massal (*bulk delete*), `UserObserver` mendeteksinya lalu secara otomatis membersihkan sisa *file avatar* dari *server*. Selalu daftarkan observer Anda menggunakan fitur `#[ObservedBy(ModelObserver::class)]` (standar Laravel 11).
 
-### Dashboard & Fitur Impersonate
-Setelah login, pengguna dialihkan ke **Dashboard**.
-* **Impersonate**: Fitur ini memungkinkan pengguna dengan hak akses level atas (seperti *Super Admin*) untuk "menyamar" (impersonate) sebagai pengguna lain (contoh: mencoba login sebagai perawat tanpa password perawat tersebut).
-  - Tampilan indikator impersonate dibuat menggunakan *glassmorphism* modern melayang (slide-over/floating widget) di sudut kanan bawah antarmuka. 
-  - Admin dapat kembali ke sesi aslinya kapan saja dengan menekan tombol batal pada widget tersebut.
+## 2. Sistem Pencarian & Filter Cerdas (Spatie QueryBuilder)
+Mengembangkan fitur pencarian, filter bersarang, dan pengurutan (Sort) **TIDAK PERLU** lagi di-_hardcode_ satu per satu menggunakan klausa *If-Else* di Controller.
 
-### Peran dan Hak Akses
-Sistem peran (Role) dan hak akses (Permission) dikelola menggunakan *package* dari **Spatie Laravel Permission**.
-* **Role**: Pengelompokan hak akses (Contoh: `super-admin`, `kepala-departemen`, `perawat`).
-* **Permission**: Izin spesifik untuk suatu tindakan (Contoh: `users-create`, `units-delete`, `dashboard-access`).
-* **Manajemen UI**:
-  - Manajemen *Permission* dilakukan melalui *Seeder* dan kode sumber langsung. Hak akses tidak dapat dikelola (Create/Update/Delete) melalui antarmuka web, ini bertujuan menjaga keamanan arsitektur sehingga permission murni terkontrol dari kode.
-  - Namun, Anda tetap dapat mengalokasikan (assign) Permissions ke sebuah Role di menu **Role Management**.
-
-### Pengguna (User)
-Entitas pengguna mengelola siapa saja yang berhak masuk ke sistem.
-* **Informasi Profil**: Setiap pengguna mencatat informasi Nama, Email, NIP, Avatar, serta Password.
-* **Relasi Pengguna**:
-  - `User` dapat memiliki banyak peran (Roles).
-  - `User` dapat ditautkan ke satu atau lebih Departemen/Unit Kerja (Many-to-Many lewat *pivot table* `unit_user`).
-* **UI Komponen**: Pada form pembuatan/edit pengguna, sistem menggunakan komponen dropdown interaktif bernama `SearchableSelect`.
-  - Jika konfigurasi `multiple_departments` pada `config/auth.php` bernilai `true`, form ini mengizinkan Anda menautkan satu pengguna ke lebih dari satu departemen. Jika `false`, dropdown hanya berlaku single-selection.
-
-### Departemen / Unit Kerja
-Menu Departemen mencatat data kelompok unit operasional (Contoh: IGD, Rawat Inap).
-* **Atribut Unit**: Setiap departemen memiliki `unit_id` (kode unit), `unit_name`, parameter jam buka/tutup (24 Jam atau terstruktur).
-* **Kolaborasi Pengguna**: 
-  - Pada halaman ini, Anda tidak hanya dapat melihat detail unit, melainkan juga memantau **Jumlah Pengguna** yang tertaut pada setiap departemen.
-  - Terdapat fitur **Sidebar/Slide-Over** (*Kelola Pengguna*) yang dapat diakses dengan mengeklik tombol berikon "Users" biru di masing-masing baris departemen. Melalui slide-over ini, Anda dapat menghubungkan/menghapus banyak pengguna ke departemen secara massal (*bulk sync*).
-
----
-
-## Panduan Pengembangan
-
-Jika Anda adalah developer yang mengembangkan proyek ini, berikut beberapa hal penting yang perlu diketahui:
-
-### 1. Komponen Modal Fleksibel (`Modal.jsx`)
-Sistem menggunakan satu komponen pop-up sentral, yakni `resources/js/Components/Dashboard/Modal.jsx`. 
-Komponen ini sangat fleksibel. Ia menerima *props* `type`:
-- `type="modal"` (default): Pop-up akan muncul di tengah layar.
-- `type="slide-over"`: Pop-up akan muncul melayang/slide-in dari sisi kanan layar, cocok untuk *form* sampingan atau melihat detail data panjang.
-
-### 2. Komponen Dropdown Search (`SearchableSelect.jsx`)
-Komponen `resources/js/Components/Dashboard/SearchableSelect.jsx` (berbasis `@headlessui/react`) adalah andalan sistem untuk menangani pilihan data berelasi besar (seperti memilih role atau departemen).
-- Komponen ini otomatis mendukung pencarian teks (search).
-- *Props* penting: `options` (berupa array objek yang harus punya `id` dan `name`), `selected` (array of ID atau single ID), dan `multiple` (boolean untuk mematikan/menyalakan fitur pemilihan banyak data).
-
-### 3. Middleware & Keamanan Route
-Sistem ini menggunakan Laravel Middleware dari Spatie untuk melindungi Route.
-Sebagai contoh di `UnitController.php`, fungsi `middleware` telah ditetapkan sedemikian rupa:
+**Aturan Penulisan:**
+Gunakan *package* `Spatie\QueryBuilder` dengan struktur seperti berikut di *method* `index`:
 ```php
-return [
-    new Middleware('permission:units-access', only: ['index']),
-    new Middleware('permission:units-create', only: ['create', 'store']),
-    new Middleware('permission:units-update', only: ['edit', 'update']),
-    new Middleware('permission:units-delete', only: ['destroy']),
-];
+$query = QueryBuilder::for(User::class)
+    ->allowedFilters('name', 'email', 'nip') // Izinkan pencarian URL ?filter[name]=Budi
+    ->allowedSorts('name', 'created_at')     // Izinkan pengurutan URL ?sort=-created_at
+    ->allowedIncludes('roles', 'units');     // Izinkan relasi URL ?include=roles
 ```
-Pastikan Anda selalu mendaftarkan/melindungi setiap *resource controller* baru dengan pola di atas.
+Di UI (React), komponen `<Search />` dan `<Table.Th />` akan secara otomatis mengirimkan struktur kueri ini melalui `router.get` dengan fitur `preserveState: true` agar antarmuka tidak *refresh*.
 
-### 4. Build Aset Frontend
-Tiap kali Anda mengubah kode UI (file `.jsx` maupun CSS), selalu jalankan perintah Vite:
-- **Development**: `npm run dev`
-- **Production / Deployment**: `npm run build`
+## 3. Keamanan Data & API Resource
+Untuk mencegah insiden kebocoran data (seperti `password_hash` atau parameter konfidensial terlempar ke *frontend* JSON), **DILARANG** melempar `$model->get()` secara langsung ke fungsi `Inertia::render()`.
 
-### 5. Seeding Data Awal
-Karena permission murni dijalankan di level sistem, setiap menambahkan *permission* baru, jangan lupa untuk menulisnya di dalam `database/seeders/PermissionSeeder.php` lalu jalankan perintah:
-```bash
-php artisan migrate:fresh --seed
+**Aturan:**
+Gunakan `JsonResource` (`app/Http/Resources`).
+```php
+// ❌ SALAH (Beresiko)
+return Inertia::render('Users/Index', ['users' => User::paginate()]);
+
+// ✅ BENAR (Aman & Ringan)
+return Inertia::render('Users/Index', [
+    'users' => UserResource::collection(User::paginate())
+]);
 ```
-Ini akan memastikan Role dan Permission tertata rapi sejak awal deploy.
+Catatan Penting: Saat merender dari *Resource Collection*, data *pagination* akan selalu dibungkus di dalam struktur atribut `data` dan `meta`. Di komponen React Anda (contoh `<Pagination />`), gunakan objek `meta` (`users.meta`) untuk merender bilah nomor halaman.
+
+## 4. Optimasi Performa UI
+Untuk membuat aplikasi ini terasa "terbang", Anda wajib memperhatikan tiga metode pemuatan (*loading*):
+
+### A. Lazy Loading & Inertia Deferred Props
+Bila suatu halaman memiliki metrik penghitungan statistik (seperti `User::count()`) atau *query chart* grafis, data tersebut harus dimuat di-belakang-layar setelah *layout* utamanya muncul.
+```php
+// Di Controller:
+'super_admin_data' => Inertia::defer(fn() => [
+    'total_users' => User::count()
+])
+```
+```jsx
+// Di React (menggunakan tag <Deferred>):
+<Deferred data={['super_admin_data']} fallback={<div>Loading...</div>}>
+    <SuperAdminDashboard />
+</Deferred>
+```
+
+### B. In-Place Updates (Axios) vs Full Render
+Ketika pengguna mengeklik **Submit Form**, jika itu adalah operasi sederhana penciptaan entri baru, gunakan `useForm()` bawaan *Inertia*.
+Namun, bila fiturnya adalah komponen interaktif modular (seperti menambah pengguna dari *sidebar* ke dalam sebuah *Department* tanpa meninggalkan tabel `Unit`), gunakan `axios` yang merespon *JSON message* saja ketimbang `router.post()` yang akan memuat ulang (mengunduh ulang props) keseluruhan baris *Unit* lain di layar.
+```jsx
+// Aksi 'Livewire-like' di React:
+axios.post(route('units.users.sync', unitId), { user_ids })
+    .then(res => {
+        // Manipulasi state internal secara instan
+        // Menampilkan pesan sukses lokal
+    });
+```
+*Pastikan Backend merespons `wantsJson()` dengan baik untuk melayani *requests* sejenis ini.*
+
+## 5. Komponen UI Siap Pakai
+Terdapat puluhan komponen pra-desain bergaya *modern glassmorphism*, *vibrant colors*, dan ramah *micro-animations* yang berlokasi di `resources/js/Components/Dashboard`.
+* **`Modal.jsx`**: Mendukung dua tipe, *Center Modal* standar (`type="modal"`) dan panel sisipan kanan (`type="slide-over"`).
+* **`SearchableSelect.jsx`**: Elemen *dropdown* multifungsi yang berbasis pustaka `Headless UI`, membebaskan Anda dari belenggu elemen HTML standar `<select>` yang kuno. Mendukung fitur pencarian dan multiseleksi tak terbatas (*many-to-many*).
+
+---
+
+> Selalu lindungi Controller Anda menggunakan atribut antarmuka `HasMiddleware` dan membatasi akses berdasarkan *permission* (misal: `permission:users-create`). Jangan pernah abaikan celah keamanan (Security Vulnerability) terkait ketiadaan pengaman rute!

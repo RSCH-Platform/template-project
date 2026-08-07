@@ -1,66 +1,66 @@
-# Dashboard Management System
+# Enterprise Dashboard Management System (Template 1)
 
-Sistem Informasi Dashboard interaktif yang dikembangkan menggunakan **Laravel 13**, **React**, **Inertia.js**, dan **Tailwind CSS**. Sistem ini memfasilitasi pengelolaan entitas sentral seperti Pengguna (User), Group Akses (Role & Permission), hingga Unit Kerja (Departemen).
+Sistem Informasi Dashboard interaktif berskala *Enterprise* yang dikembangkan menggunakan **Laravel 11**, **React**, **Inertia.js v2.0**, dan **Tailwind CSS**. Template ini tidak hanya menyediakan fitur *boiler-plate* standar, melainkan sebuah pondasi arsitektur kokoh yang sangat siap untuk skalabilitas (*Layered Architecture*) dan performa tinggi.
 
-## 🚀 Fitur Utama
-- **Autentikasi Dinamis**: Login menggunakan Email atau NIP (dapat diubah konfigurasinya).
-- **Manajemen Hak Akses Bawaan (ACL)**: Berbasis `spatie/laravel-permission` yang tangguh dan terpusat pada kode (Seeder).
-- **Impersonasi Akun (Super Admin)**: Memungkinkan admin level tinggi untuk masuk sebagai pengguna lain secara aman tanpa *password* mereka, menggunakan antarmuka modern yang melayang.
-- **Relasi Kompleks Unit & Pengguna**: Dukungan relasi *many-to-many* antara pengguna dan departemen, disempurnakan dengan *searchable UI* dan kelola *bulk* via panel khusus.
-- **UI Responsif & Modern**: Dirancang menggunakan *Tailwind CSS* & *Headless UI*, lengkap dengan mode tampilan (List & Grid) dan dukungan tema (Light/Dark Mode).
+## 🚀 Fitur Unggulan & Optimasi
+- **Arsitektur Berlapis (Layered Architecture)**: Pemisahan tegas antara logika HTTP (*Thin Controller*), Logika Bisnis (*Services*), Data (*Models*), dan *Side-effects* (*Observers*).
+- **Performa Responsif ala Livewire**: Integrasi *Ajax/Axios* untuk aksi *update* dan manipulasi data yang kompleks (seperti fitur penetapan pengguna ke unit kerja) tanpa perlu memuat ulang keseluruhan halaman (tanpa `full-page reload`).
+- **Lazy Loading Cerdas (Inertia Deferred Props)**: Metrik berat (misalnya grafik, kalkulasi statistik) tidak memblokir render UI awal. Halaman muncul seketika, dan data yang tertunda akan dimuat secara *background*.
+- **Pencarian & Filter Tingkat Lanjut**: Penggunaan **Spatie QueryBuilder** di *backend* memungkinkan Anda mengaktifkan fitur pencarian, filter, dan pengurutan tabel hanya dengan satu baris kode, terhubung langsung dengan *pagination* reaktif di React.
+- **Autentikasi Fleksibel & Impersonasi**: Mendukung *login* ganda (Email/NIP) yang dapat dikonfigurasi melalui `.env`, serta kapabilitas *Super Admin* untuk masuk (*impersonate*) ke akun bawahan dengan aman.
+- **Role-Based Access Control (RBAC) Ketat**: Terlindungi penuh oleh *Spatie Laravel Permission* dan `HasMiddleware`, tidak ada rute manajemen yang terbuka tanpa pengawasan sistem hak akses.
 
-## 🛠️ Tech Stack
-- **Backend**: Laravel 13, PHP 8.3+
-- **Frontend**: React 18, Inertia.js, Vite
-- **Styling**: Tailwind CSS v3, Headless UI, Tabler Icons
-- **Database**: SQLite (Development) / MySQL / PostgreSQL (Production)
+## 🛠️ Spesifikasi Teknologi (*Tech Stack*)
+- **Backend**: Laravel 11, PHP 8.2+, Spatie QueryBuilder, Spatie Permission, API Resources (JsonResource).
+- **Frontend**: React 18, Inertia.js 2.0, Vite, Axios, Zustand (State Management), Day.js.
+- **UI & Styling**: Tailwind CSS v3, Headless UI, Tabler Icons, Chart.js.
+- **Database**: SQLite (Development) / MySQL / PostgreSQL (Production).
 
-## 📦 Instalasi
+## 📦 Panduan Instalasi Cepat
 
-1. **Clone repository ini** (jika menggunakan git) atau extract file ke folder server lokal Anda.
+1. **Unduh repositori** dan masuk ke direktorinya:
    ```bash
    git clone <repo-url>
    cd <project-folder>
    ```
 
-2. **Instal dependensi Backend & Frontend**
+2. **Instal seluruh paket (Backend & Frontend)**:
    ```bash
    composer install
    npm install
    ```
 
-3. **Konfigurasi Environment**
-   Salin file `.env.example` menjadi `.env`, dan sesuaikan konfigurasi *database* Anda.
+3. **Konfigurasi Lingkungan (*Environment*)**:
+   Salin `.env.example` ke `.env` lalu sesuaikan kredensial *database* Anda.
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
 
-4. **Jalankan Migrasi & Seeder**
-   Sangat penting untuk menjalankan migrasi dan *seeder* agar semua Role (Group Akses) dan Permission tercipta di *database*.
+4. **Siapkan Basis Data & Pengguna Awal**:
+   *Command* ini sangat krusial untuk memastikan seluruh entitas Hak Akses (Role/Permission) dan Administrator terbentuk secara otomatis.
    ```bash
    php artisan migrate:fresh --seed
    ```
 
-5. **Kompilasi Aset Frontend**
-   Untuk *development*, jalankan *Vite server*. Untuk *production*, jalankan perintah *build*.
+5. **Kompilasi Aset (*Frontend*)**:
    ```bash
+   # Development Server (Hot Reload)
    npm run dev
-   # ATAU untuk production
+   
+   # Production Build
    npm run build
    ```
 
-6. **Jalankan Server Laravel**
+6. **Jalankan Aplikasi (*Backend*)**:
    ```bash
    php artisan serve
    ```
-   Akses aplikasi pada `http://127.0.0.1:8000`.
+   Aplikasi siap diakses di `http://127.0.0.1:8000`.
 
-## 📖 Dokumentasi Lengkap
-Untuk panduan penggunaan fitur yang lebih detail (Cara manajemen Role, setting konfigurasi NIP/Email, dan komponen *reusable*), silakan baca file **[USAGE.md](docs/USAGE.md)** yang ada di dalam folder `docs/`.
-
-## 👥 Kontribusi
-Proyek ini adalah *template/boilerplate* tertutup. Untuk melakukan perubahan sistemik, pastikan mengikuti panduan pengembangan yang tertera pada *USAGE.md* untuk menjaga *codebase* tetap bersih.
+## 📖 Dokumentasi Lengkap & Standar Penulisan Kode (SOP)
+Template ini memiliki **aturan dan standar arsitektur** yang ketat agar aplikasi Anda kelak tidak menjadi kode yang kotor (*spaghetti code*). 
+Sangat disarankan bagi setiap pengembang yang terlibat dalam repositori ini untuk membaca buku panduan utama di **[docs/USAGE.md](docs/USAGE.md)** sebelum menambahkan atau memodifikasi fitur.
 
 ---
 © 2026 - Template Project Management

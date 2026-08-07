@@ -36,7 +36,7 @@ class UnitController extends Controller implements HasMiddleware
         
         $units = $this->dynamicPaginate($query);
                     
-        $all_users = \App\Models\User::select('id', 'name', 'email', 'avatar', 'nip')->get();
+        $all_users = \App\Models\User::select('id', 'name', 'email', 'avatar', 'nip')->with('roles:id,name')->get();
 
         return Inertia::render('Units/Index', [
             'units' => $units,

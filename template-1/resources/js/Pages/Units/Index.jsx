@@ -218,15 +218,38 @@ export default function Index({ units, all_users }) {
                 onChangeValues={(val) => setData('user_ids', val)}
                 selectLabel="Daftar Pengguna Departemen"
                 selectPlaceholder="Cari dan pilih pengguna..."
-                currentItems={selectedUnit?.users || []}
-                currentItemsLabel="Pengguna Terdaftar Saat Ini:"
-                renderCurrentItem={(u) => (
-                    <div key={u.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm">
-                        <div className="w-6 h-6 rounded-full bg-primary-200 dark:bg-primary-900 flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-300 overflow-hidden">
-                            {u.avatar ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
-                        </div>
-                        <span className="text-slate-700 dark:text-slate-300 font-medium">{u.name}</span>
-                    </div>
+                tableTitle="Pengguna Terdaftar"
+                columns={[
+                    { key: 'name', label: 'Pengguna', sortable: true },
+                    { key: 'email', label: 'Email', sortable: true },
+                    { key: 'roles', label: 'Peran', sortable: false, className: 'text-center' },
+                ]}
+                renderRow={(u, index) => (
+                    <>
+                        <Table.Td>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center font-bold text-primary-700 dark:text-primary-300 overflow-hidden flex-shrink-0">
+                                    {u.avatar ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">{u.name}</p>
+                                    <p className="text-xs text-slate-500">{u.nip || '-'}</p>
+                                </div>
+                            </div>
+                        </Table.Td>
+                        <Table.Td>
+                            <span className="text-sm text-slate-600 dark:text-slate-400">{u.email}</span>
+                        </Table.Td>
+                        <Table.Td className="text-center">
+                            {u.roles && u.roles.length > 0 ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md bg-info-50 text-info-700 text-xs font-medium dark:bg-info-900/30 dark:text-info-400">
+                                    {u.roles[0].name} {u.roles.length > 1 && `+${u.roles.length - 1}`}
+                                </span>
+                            ) : (
+                                <span className="text-slate-400 text-xs">-</span>
+                            )}
+                        </Table.Td>
+                    </>
                 )}
             />
         </PageContainer>

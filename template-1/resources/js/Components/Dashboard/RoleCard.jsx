@@ -29,7 +29,7 @@ export default function RoleCard({ role, onEdit, onDelete, canUpdate, canDelete 
             {/* Permissions */}
             <div className="h-full p-4 bg-slate-50 dark:bg-slate-800/50">
                 <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto scrollbar-thin">
-                    {role.permissions.slice(0, 8).map((permission, index) => (
+                    {role.permissions.slice(0, 5).map((permission, index) => (
                         <span
                             key={index}
                             className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-accent-100 dark:bg-accent-900/50 text-accent-700 dark:text-accent-400"
@@ -38,9 +38,9 @@ export default function RoleCard({ role, onEdit, onDelete, canUpdate, canDelete 
                             {permission.name}
                         </span>
                     ))}
-                    {role.permissions.length > 8 && (
+                    {role.permissions.length > 5 && (
                         <span className="px-2 py-0.5 text-xs font-medium text-slate-500">
-                            +{role.permissions.length - 8} lainnya
+                            +{role.permissions.length - 5} lainnya
                         </span>
                     )}
                 </div>

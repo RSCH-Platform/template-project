@@ -22,167 +22,17 @@ import {
     IconWallet,
 } from "@tabler/icons-react";
 
+import StatCard from "@/Components/Dashboard/StatCard";
+import TargetCard from "@/Components/Dashboard/TargetCard";
+import InfoCard from "@/Components/Dashboard/InfoCard";
+import ListCard from "@/Components/Dashboard/ListCard";
+
 const formatCurrency = (value = 0) =>
     new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
         minimumFractionDigits: 0,
     }).format(value);
-
-// Stat Card Component
-function StatCard({ title, value, subtitle, icon: Icon, gradient, trend }) {
-    return (
-        <div
-            className={`
-            relative overflow-hidden rounded-2xl p-5
-            bg-gradient-to-br ${gradient}
-            text-white shadow-lg
-        `}
-        >
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-                <Icon
-                    size={128}
-                    strokeWidth={0.5}
-                    className="transform translate-x-8 -translate-y-8"
-                />
-            </div>
-
-            <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="p-2 rounded-xl bg-white/20">
-                        <Icon size={20} strokeWidth={1.5} />
-                    </div>
-                    <span className="text-sm font-medium opacity-90">
-                        {title}
-                    </span>
-                </div>
-
-                <p className="text-3xl font-bold">{value}</p>
-
-                {subtitle && (
-                    <p className="mt-2 text-sm opacity-80 flex items-center gap-1">
-                        {trend === "up" && <IconArrowUpRight size={14} />}
-                        {trend === "down" && <IconArrowDownRight size={14} />}
-                        {subtitle}
-                    </p>
-                )}
-            </div>
-        </div>
-    );
-}
-
-// Target Progress Card Component
-function TargetCard({ title, current, target, icon: Icon }) {
-    const percentage = target > 0 ? Math.min((current / target) * 100, 100) : 0;
-    const isAchieved = percentage >= 100;
-
-    return (
-        <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-lg">
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-                <Icon
-                    size={128}
-                    strokeWidth={0.5}
-                    className="transform translate-x-8 -translate-y-8"
-                />
-            </div>
-
-            <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="p-2 rounded-xl bg-white/20">
-                        <Icon size={20} strokeWidth={1.5} />
-                    </div>
-                    <span className="text-sm font-medium opacity-90">
-                        {title}
-                    </span>
-                </div>
-
-                <p className="text-2xl font-bold">{percentage.toFixed(0)}%</p>
-
-                {/* Progress Bar */}
-                <div className="mt-3 w-full h-2 bg-white/30 rounded-full overflow-hidden">
-                    <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                            isAchieved ? "bg-green-400" : "bg-white"
-                        }`}
-                        style={{ width: `${percentage}%` }}
-                    />
-                </div>
-
-                <p className="mt-2 text-xs opacity-80">
-                    {formatCurrency(current)} / {formatCurrency(target)}
-                </p>
-            </div>
-        </div>
-    );
-}
-
-// Info Card Component
-function InfoCard({ title, value, subtitle, icon: Icon }) {
-    return (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                        {title}
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
-                        {value}
-                    </p>
-                    {subtitle && (
-                        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                            <Icon size={14} />
-                            {subtitle}
-                        </p>
-                    )}
-                </div>
-                <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
-                    <Icon
-                        size={24}
-                        className="text-slate-600 dark:text-slate-400"
-                        strokeWidth={1.5}
-                    />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// List Card Component
-function ListCard({ title, subtitle, icon: Icon, children, emptyMessage }) {
-    return (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30">
-                        <Icon
-                            size={18}
-                            className="text-primary-600 dark:text-primary-400"
-                        />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                            {title}
-                        </h3>
-                        {subtitle && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                {subtitle}
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
-            <div className="p-5">
-                {children || (
-                    <div className="flex h-32 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
-                        {emptyMessage}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
 
 export default function Dashboard({
     totalCategories,

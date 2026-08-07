@@ -9,6 +9,10 @@ use Inertia\Inertia;
 use App\Http\Requests\UnitRequest;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use App\Http\Resources\UnitResource;
+use App\Http\Resources\UserResource;
+use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class UnitController extends Controller implements HasMiddleware
 {
@@ -24,8 +28,13 @@ class UnitController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $query = Unit::with('users:id,name,email,avatar,nip')->withCount('users')->orderBy('unit_name');
-        $query = $this->applySearch($query, ['unit_name']);
+        $query = QueryBuilder::for(Unit::class)
+            ->allowedFilters(['unit_name'])
+            ->allowedSorts(['unit_name', 'created_at'])
+            ->allowedIncludes(['users'])
+            ->with('users:id,name,email,avatar,nip')
+            ->withCount('users')
+            ->defaultSort('unit_name');
         
         $user = auth()->user();
         if (!$user->hasPermissionTo('units-access-all')) {
@@ -35,12 +44,10 @@ class UnitController extends Controller implements HasMiddleware
         }
         
         $units = $this->dynamicPaginate($query);
-                    
-        $all_users = \App\Models\User::select('id', 'name', 'email', 'avatar', 'nip')->with('roles:id,name')->get();
 
         return Inertia::render('Units/Index', [
-            'units' => $units,
-            'all_users' => $all_users
+            'units' => UnitResource::collection($units),
+            'all_users' => Inertia::defer(fn () => UserResource::collection(\App\Models\User::select('id', 'name', 'email', 'avatar', 'nip')->with('roles:id,name')->get()))
         ]);
     }
 

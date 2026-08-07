@@ -9,6 +9,9 @@ use App\Http\Requests\UpdateRoleRequest;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use App\Http\Resources\RoleResource;
+use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class RoleController extends Controller
 {
@@ -21,25 +24,23 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        // get all role data
-        $query = Role::query()
-            ->with('permissions');
-        $query = $this->applySearch($query, ['name'])
-            ->select('id', 'name')
-            ->latest();
+        // get all role data using Spatie QueryBuilder
+        $query = QueryBuilder::for(Role::class)
+            ->allowedFilters(['name'])
+            ->allowedSorts(['name', 'created_at'])
+            ->allowedIncludes(['permissions'])
+            ->with('permissions')
+            ->defaultSort('-created_at');
             
         $roles = $this->dynamicPaginate($query);
 
-        // get all permission data
-        $permissions = Permission::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
-
         // render view
         return Inertia::render('Dashboard/Roles/Index', [
-            'roles' => $roles,
-            'permissions' => $permissions,
+            'roles' => RoleResource::collection($roles),
+            'permissions' => Inertia::defer(fn () => Permission::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get()),
         ]);
     }
 

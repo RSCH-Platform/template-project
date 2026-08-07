@@ -90,10 +90,12 @@ export default function Index({ units, all_users }) {
         }
     };
 
+    const unitsMeta = units?.meta || units;
+
     return (
         <PageContainer
             title="Departemen"
-            description={`${units?.total || units?.data?.length || 0} departemen terdaftar`}
+            description={`${unitsMeta?.total || units?.data?.length || 0} departemen terdaftar`}
             icon={<IconBuilding size={28} className="text-primary-500" />}
             actionLabel="Tambah Departemen"
             actionUrl={route("units.create")}
@@ -164,7 +166,7 @@ export default function Index({ units, all_users }) {
                                         )}
                                     </Table.Td>
                                     <Table.Td className="text-center">
-                                        {++i + (units.current_page - 1) * units.per_page}
+                                        {++i + (unitsMeta.current_page - 1) * unitsMeta.per_page}
                                     </Table.Td>
                                     <Table.Td>{unit.unit_name}</Table.Td>
                                     <Table.Td className="text-center">
@@ -210,14 +212,14 @@ export default function Index({ units, all_users }) {
             </Table.Card>
 
             
-            {units?.last_page !== 1 && <Pagination links={units?.links} />}
+            {unitsMeta?.last_page !== 1 && <Pagination links={unitsMeta?.links} />}
 
             <AssignRelationModal
                 show={showUsersModal}
                 onClose={() => setShowUsersModal(false)}
                 title={selectedUnit ? `Kelola Pengguna - ${selectedUnit.unit_name}` : 'Kelola Pengguna'}
                 processing={syncProcessing}
-                options={all_users || []}
+                options={all_users?.data || all_users || []}
                 selectedValues={selectedUserIds}
                 onChangeValues={handleSyncUsers}
                 selectLabel="Daftar Pengguna Departemen"

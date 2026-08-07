@@ -46,10 +46,12 @@ export default function Index() {
         });
     };
 
+    const usersMeta = users.meta || users;
+
     return (
         <PageContainer
             title="Pengguna"
-            description={`${users.total || users.data?.length || 0} pengguna terdaftar`}
+            description={`${usersMeta.total || users.data?.length || 0} pengguna terdaftar`}
             canCreate={canCreateUsers}
             actionLabel="Tambah Pengguna"
             actionUrl={route("users.create")}
@@ -129,8 +131,8 @@ export default function Index() {
                                         </Table.Td>
                                         <Table.Td className={"text-center"}>
                                             {++i +
-                                                (users.current_page - 1) *
-                                                users.per_page}
+                                                (usersMeta.current_page - 1) *
+                                                usersMeta.per_page}
                                         </Table.Td>
                                         <Table.Td>
                                             <div className="flex items-center gap-3">
@@ -219,7 +221,7 @@ export default function Index() {
                 </EmptyState>
             )}
 
-            {users.last_page !== 1 && <Pagination links={users.links} />}
+            {usersMeta.last_page !== 1 && <Pagination links={usersMeta.links} />}
         </PageContainer>
     );
 }

@@ -10,6 +10,9 @@ use Spatie\Permission\Models\Role;
 use App\Services\UserService;
 use App\Http\Requests\UserRequest;
 use App\Models\Unit;
+use App\Http\Resources\UserResource;
+use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class UserController extends Controller
 {
@@ -22,18 +25,19 @@ class UserController extends Controller
      */
     public function index()
     {
-        // get all users data
-        $query = User::query()
-            ->with(['roles', 'units']);
-        $query = $this->applySearch($query, ['name'])
-            ->select('id', 'name', 'avatar', 'email', 'nip')
-            ->latest();
+        // get all users data using Spatie QueryBuilder
+        $query = QueryBuilder::for(User::class)
+            ->allowedFilters(['name', 'email', 'nip'])
+            ->allowedSorts(['name', 'created_at'])
+            ->allowedIncludes(['roles', 'units'])
+            ->with(['roles', 'units'])
+            ->defaultSort('-created_at');
             
         $users = $this->dynamicPaginate($query);
 
         // render view
         return Inertia::render('Dashboard/Users/Index', [
-            'users' => $users,
+            'users' => UserResource::collection($users),
             'loginType' => config('auth.login_type', 'email'),
         ]);
     }

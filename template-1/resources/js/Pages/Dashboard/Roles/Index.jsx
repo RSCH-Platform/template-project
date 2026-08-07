@@ -95,10 +95,12 @@ export default function Index() {
         confirmDelete(route("roles.destroy", roleId));
     };
 
+    const rolesMeta = roles.meta || roles;
+
     return (
         <PageContainer
             title="Akses Group"
-            description={`${roles.total || roles.data?.length || 0} group terdaftar`}
+            description={`${rolesMeta.total || roles.data?.length || 0} group terdaftar`}
             icon={<IconUserShield size={28} className="text-primary-500" />}
             actions={
                 canCreateRoles && (
@@ -149,7 +151,7 @@ export default function Index() {
                     <div className="mb-4">
                         <ListBox
                             label={"Pilih hak akses"}
-                            data={permissions}
+                            data={permissions?.data || permissions || []}
                             selected={data.selectedPermission}
                             setSelected={setSelectedPermission}
                             errors={errors.selectedPermission}
@@ -197,7 +199,7 @@ export default function Index() {
                 </EmptyState>
             )}
 
-            {roles.last_page !== 1 && <Pagination links={roles.links} />}
+            {rolesMeta.last_page !== 1 && <Pagination links={rolesMeta.links} />}
         </PageContainer>
     );
 }

@@ -26,9 +26,9 @@ class RoleController extends Controller
     {
         // get all role data using Spatie QueryBuilder
         $query = QueryBuilder::for(Role::class)
-            ->allowedFilters(['name'])
-            ->allowedSorts(['name', 'created_at'])
-            ->allowedIncludes(['permissions'])
+            ->allowedFilters('name')
+            ->allowedSorts('name', 'created_at')
+            ->allowedIncludes('permissions')
             ->with('permissions')
             ->defaultSort('-created_at');
             

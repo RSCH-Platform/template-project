@@ -27,9 +27,9 @@ class UserController extends Controller
     {
         // get all users data using Spatie QueryBuilder
         $query = QueryBuilder::for(User::class)
-            ->allowedFilters(['name', 'email', 'nip'])
-            ->allowedSorts(['name', 'created_at'])
-            ->allowedIncludes(['roles', 'units'])
+            ->allowedFilters('name', 'email', 'nip')
+            ->allowedSorts('name', 'created_at')
+            ->allowedIncludes('roles', 'units')
             ->with(['roles', 'units'])
             ->defaultSort('-created_at');
             

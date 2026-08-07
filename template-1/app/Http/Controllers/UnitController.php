@@ -29,9 +29,9 @@ class UnitController extends Controller implements HasMiddleware
     public function index()
     {
         $query = QueryBuilder::for(Unit::class)
-            ->allowedFilters(['unit_name'])
-            ->allowedSorts(['unit_name', 'created_at'])
-            ->allowedIncludes(['users'])
+            ->allowedFilters('unit_name')
+            ->allowedSorts('unit_name', 'created_at')
+            ->allowedIncludes('users')
             ->with('users:id,name,email,avatar,nip')
             ->withCount('users')
             ->defaultSort('unit_name');

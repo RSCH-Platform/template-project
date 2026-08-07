@@ -31,7 +31,7 @@ Route::get('/login', function() {
 // SSO Routes (hanya aktif saat IAM_ENABLED=true)
 Route::middleware([RedirectIfSsoDisabled::class])->group(function () {
     Route::get('/sso/login', SsoLoginRedirectController::class)->name('sso.login');
-    Route::get('/callback', SsoCallbackController::class)->name('sso.callback');
+    Route::get('/sso/callback', SsoCallbackController::class)->name('sso.callback');
 });
 
 // SSO-aware Logout

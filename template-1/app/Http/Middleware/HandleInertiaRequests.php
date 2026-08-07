@@ -34,7 +34,6 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'permissions' => $request->user() ? $request->user()->getPermissions() : [],
-                'super' => $request->user() ? $request->user()->hasRole('super-admin') : false,
                 'is_impersonating' => app('impersonate')->isImpersonating(),
                 'is_sso_user' => $request->user() ? $request->user()->iam_id !== null : false,
                 'sso_enabled' => config('iam.enabled', false) || env('USE_SSO', false),

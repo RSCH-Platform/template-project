@@ -3,18 +3,13 @@ import { usePage } from "@inertiajs/react";
 export function resolveAuthorizationState(auth = {}) {
     return {
         permissions: auth?.permissions ?? {},
-        super: auth?.super === true,
     };
-}
-
-export function isSuperAdmin(auth = {}) {
-    return resolveAuthorizationState(auth).super;
 }
 
 export function can(permission, auth = {}) {
     const state = resolveAuthorizationState(auth);
 
-    return state.super || state.permissions?.[permission] === true;
+    return state.permissions?.[permission] === true;
 }
 
 export function canAny(permissions = [], auth = {}) {
@@ -41,6 +36,5 @@ export function useAuthorization() {
         can: (permission) => can(permission, auth),
         canAny: (permissions) => canAny(permissions, auth),
         canAll: (permissions) => canAll(permissions, auth),
-        isSuperAdmin: () => isSuperAdmin(auth),
     };
 }

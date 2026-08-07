@@ -29,7 +29,7 @@ export default function Login({ status, canResetPassword, canRegister, botGuard,
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("login"));
+        post(route("login.store"));
     };
 
     return (

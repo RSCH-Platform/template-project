@@ -1,6 +1,5 @@
 import React from "react";
 import { Link, usePage } from "@inertiajs/react";
-import { isSuperAdmin } from "@/Utils/authorization";
 
 export default function LinkItem({
     href,
@@ -14,7 +13,7 @@ export default function LinkItem({
     const { auth } = usePage().props;
 
     const isActive = url.startsWith(href);
-    const canAccess = isSuperAdmin(auth) || access === true;
+    const canAccess = access === true;
 
     if (!canAccess) return null;
 

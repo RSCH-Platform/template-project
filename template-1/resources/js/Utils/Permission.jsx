@@ -1,11 +1,10 @@
 import { useAuthorization } from "./authorization";
 
 export default function useHasAnyPermission(permissions, givenPermissions = null) {
-    const { canAny, isSuperAdmin } = useAuthorization();
+    const { canAny } = useAuthorization();
 
     if (givenPermissions) {
         return (
-            isSuperAdmin() ||
             permissions.some((permission) => givenPermissions?.[permission] === true)
         );
     }

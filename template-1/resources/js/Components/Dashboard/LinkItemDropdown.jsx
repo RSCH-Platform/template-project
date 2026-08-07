@@ -5,20 +5,17 @@ import {
     IconChevronUp,
     IconCornerDownRight,
 } from "@tabler/icons-react";
-import { isSuperAdmin } from "@/Utils/authorization";
 
 export default function LinkItemDropdown({ icon, title, data, access, sidebarOpen, ...props }) {
     const { url } = usePage();
     const [isOpen, setIsOpen] = useState(false);
     const { auth } = usePage().props;
-    const superAdmin = isSuperAdmin(auth);
-
     const visibleItems = useMemo(
-        () => data.filter((item) => superAdmin || item.permissions === true),
-        [data, superAdmin]
+        () => data.filter((item) => item.permissions === true),
+        [data]
     );
 
-    const canRenderParent = superAdmin || access === true || visibleItems.length > 0;
+    const canRenderParent = access === true || visibleItems.length > 0;
 
     if (!canRenderParent || visibleItems.length === 0) {
         return null;

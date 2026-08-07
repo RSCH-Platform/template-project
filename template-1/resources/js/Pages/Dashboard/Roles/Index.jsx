@@ -20,6 +20,7 @@ import {
 
 import EmptyState from "@/Components/Dashboard/EmptyState";
 import RoleCard from "@/Components/Dashboard/RoleCard";
+import PerPage from "@/Components/Dashboard/PerPage";
 
 export default function Index() {
     const { roles, permissions, errors } = usePage().props;
@@ -130,12 +131,17 @@ export default function Index() {
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="mb-4 w-full sm:w-80">
-                <Search
-                    url={route("roles.index")}
-                    placeholder="Cari akses group..."
-                />
+            {/* Search and PerPage */}
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <div className="w-full sm:w-80">
+                    <Search
+                        url={route("roles.index")}
+                        placeholder="Cari akses group..."
+                    />
+                </div>
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto">
+                    <PerPage url={route("roles.index")} />
+                </div>
             </div>
 
             {/* Modal */}

@@ -22,13 +22,16 @@ class UserController extends Controller
      */
     public function index()
     {
+        $perPage = request('per_page', 10);
+        $perPage = $perPage === 'all' ? User::count() : $perPage;
+
         // get all users data
         $users = User::query()
             ->with(['roles', 'units'])
             ->when(request()->search, fn ($query) => $query->where('name', 'like', '%'.request()->search.'%'))
             ->select('id', 'name', 'avatar', 'email', 'nip')
             ->latest()
-            ->paginate(7)
+            ->paginate($perPage)
             ->withQueryString();
 
         // render view

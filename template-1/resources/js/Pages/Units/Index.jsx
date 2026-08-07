@@ -13,6 +13,7 @@ import Modal from '@/Components/Dashboard/Modal';
 import SearchableSelect from '@/Components/Dashboard/SearchableSelect';
 import toast from 'react-hot-toast';
 import Button from '@/Components/Dashboard/Button';
+import PerPage from '@/Components/Dashboard/PerPage';
 
 export default function Index({ units, all_users }) {
 
@@ -117,6 +118,9 @@ export default function Index({ units, all_users }) {
                         url={route("units.index")}
                         placeholder="Cari departemen..."
                     />
+                </div>
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto">
+                    <PerPage url={route("units.index")} />
                 </div>
             </div>
 

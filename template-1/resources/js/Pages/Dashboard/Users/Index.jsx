@@ -25,6 +25,7 @@ import Swal from "sweetalert2";
 
 import EmptyState from "@/Components/Dashboard/EmptyState";
 import UserCard from "@/Components/Dashboard/UserCard";
+import PerPage from "@/Components/Dashboard/PerPage";
 
 export default function Index() {
     const { users, auth, loginType = 'email' } = usePage().props;
@@ -105,7 +106,9 @@ export default function Index() {
                         placeholder="Cari pengguna..."
                     />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                    <PerPage url={route("users.index")} />
+                    <div className="flex items-center gap-2">
                     <button
                         onClick={() => setViewMode("grid")}
                         className={`p-2.5 rounded-lg transition-colors ${

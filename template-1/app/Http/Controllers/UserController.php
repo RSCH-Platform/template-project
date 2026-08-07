@@ -24,8 +24,8 @@ class UserController extends Controller
     {
         // get all users data
         $query = User::query()
-            ->with(['roles', 'units'])
-            ->when(request()->search, fn ($query) => $query->where('name', 'like', '%'.request()->search.'%'))
+            ->with(['roles', 'units']);
+        $query = $this->applySearch($query, ['name'])
             ->select('id', 'name', 'avatar', 'email', 'nip')
             ->latest();
             

@@ -6,6 +6,7 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
+use App\Http\Requests\UnitRequest;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -24,6 +25,7 @@ class UnitController extends Controller implements HasMiddleware
     public function index()
     {
         $query = Unit::with('users:id,name,email,avatar,nip')->withCount('users')->orderBy('unit_name');
+        $query = $this->applySearch($query, ['unit_name']);
         
         $user = auth()->user();
         if (!$user->hasPermissionTo('units-access-all')) {
@@ -44,8 +46,7 @@ class UnitController extends Controller implements HasMiddleware
 
     public function syncUsers(Request $request, Unit $unit)
     {
-        $user = auth()->user();
-        abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
+        $this->authorize('update', $unit);
         $validated = $request->validate([
             'user_ids' => 'array',
             'user_ids.*' => 'integer|exists:users,id'
@@ -64,44 +65,28 @@ class UnitController extends Controller implements HasMiddleware
 
     public function edit(Unit $unit)
     {
-        $user = auth()->user();
-        abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
+        $this->authorize('update', $unit);
         return Inertia::render('Units/Edit', [
             'unit' => $unit
         ]);
     }
 
-    public function store(Request $request)
-
+    public function store(UnitRequest $request)
     {
-        $validated = $request->validate([
-            'unit_name' => 'required|string|max:255',
-            
-            'description' => 'nullable|string',
-        ]);
-
-        Unit::create($validated);
+        Unit::create($request->validated());
         return redirect()->route('units.index')->with('message', 'Departemen berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Unit $unit)
+    public function update(UnitRequest $request, Unit $unit)
     {
-        $user = auth()->user();
-        abort_if(!$user->hasPermissionTo('units-update-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
-        $validated = $request->validate([
-            'unit_name' => 'required|string|max:255',
-            
-            'description' => 'nullable|string',
-        ]);
-
-        $unit->update($validated);
+        $this->authorize('update', $unit);
+        $unit->update($request->validated());
         return redirect()->route('units.index')->with('message', 'Departemen berhasil diperbarui.');
     }
 
     public function destroy(Unit $unit)
     {
-        $user = auth()->user();
-        abort_if(!$user->hasPermissionTo('units-delete-all') && !$unit->users->contains('id', $user->id), 403, 'Unauthorized.');
+        $this->authorize('delete', $unit);
         $unit->delete();
         return redirect()->route('units.index')->with('message', 'Departemen berhasil dihapus.');
     }

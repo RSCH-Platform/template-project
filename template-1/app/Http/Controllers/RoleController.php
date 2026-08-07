@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreRoleRequest;
+use App\Http\Requests\UpdateRoleRequest;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -21,8 +23,8 @@ class RoleController extends Controller
     {
         // get all role data
         $query = Role::query()
-            ->with('permissions')
-            ->when(request()->search, fn ($q) => $q->where('name', 'like', '%'.request()->search.'%'))
+            ->with('permissions');
+        $query = $this->applySearch($query, ['name'])
             ->select('id', 'name')
             ->latest();
             
@@ -44,12 +46,8 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:roles,name',
-            'selectedPermission' => 'required|array',
-        ]);
 
         // create new role data
         $role = Role::create(['name' => $request->name]);
@@ -64,12 +62,8 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Role $role)
+    public function update(UpdateRoleRequest $request, Role $role)
     {
-        $request->validate([
-            'name' => 'required|string|unique:roles,name,'.$role->id,
-            'selectedPermission' => 'required|array',
-        ]);
 
         // update role data
         $role->update(['name' => $request->name]);

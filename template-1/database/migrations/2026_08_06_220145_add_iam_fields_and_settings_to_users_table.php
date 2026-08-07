@@ -14,9 +14,13 @@ return new class extends Migration
     {
         // 1. Add iam_id and status to users
         Schema::table('users', function (Blueprint $table) {
-            $table->string('iam_id')->nullable()->unique()->after('id');
-            $table->enum('status', ['active', 'inactive', 'suspended'])
-                  ->default('active')->after('avatar');
+            if (!Schema::hasColumn('users', 'iam_id')) {
+                $table->string('iam_id')->nullable()->unique()->after('id');
+            }
+            if (!Schema::hasColumn('users', 'status')) {
+                $table->enum('status', ['active', 'inactive', 'suspended'])
+                      ->default('active')->after('avatar');
+            }
         });
 
         // 2. Make password nullable
@@ -24,20 +28,22 @@ return new class extends Migration
             $table->string('password')->nullable()->change();
         });
 
-        // 3. Create iam_settings table
-        Schema::create('iam_settings', function (Blueprint $table) {
-            $table->id();
-            $table->boolean('sync_users')->default(true)
-                  ->comment('Enable or disable the `/api/iam/sync-users` endpoint');
-            $table->timestamps();
-        });
+        // 3. Create iam_settings table if it doesn't exist
+        if (!Schema::hasTable('iam_settings')) {
+            Schema::create('iam_settings', function (Blueprint $table) {
+                $table->id();
+                $table->boolean('sync_users')->default(true)
+                      ->comment('Enable or disable the `/api/iam/sync-users` endpoint');
+                $table->timestamps();
+            });
 
-        // 4. Seed default iam_settings
-        DB::table('iam_settings')->insert([
-            'sync_users' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            // 4. Seed default iam_settings
+            DB::table('iam_settings')->insert([
+                'sync_users' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
@@ -49,7 +55,13 @@ return new class extends Migration
 
         Schema::table('users', function (Blueprint $table) {
             $table->string('password')->nullable(false)->change();
-            $table->dropColumn(['iam_id', 'status']);
+            if (Schema::hasColumn('users', 'iam_id')) {
+                $table->dropColumn('iam_id');
+            }
+            if (Schema::hasColumn('users', 'status')) {
+                $table->dropColumn('status');
+            }
         });
     }
 };
+

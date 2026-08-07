@@ -38,7 +38,8 @@ class PermissionSeeder extends Seeder
         $create('roles-update'); $create('roles-delete');
         $create('permissions-access');
 
-
+        // Added from refactoring
+        $create('impersonate');
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

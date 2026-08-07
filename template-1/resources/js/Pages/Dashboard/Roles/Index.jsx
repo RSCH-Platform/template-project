@@ -1,26 +1,25 @@
 import React from "react";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, useForm, usePage } from "@inertiajs/react";
-import Button from "@/Components/Dashboard/Button";
-import Input from "@/Components/Dashboard/Input";
-import ListBox from "@/Components/Dashboard/ListBox";
-import Modal from "@/Components/Dashboard/Modal";
-import Search from "@/Components/Dashboard/Search";
-import Pagination from "@/Components/Dashboard/Pagination";
 import { useAuthorization } from "@/Utils/authorization";
 import {
     IconDatabaseOff,
     IconCirclePlus,
-    IconTrash,
     IconUserShield,
-    IconPencilCog,
     IconPencilCheck,
-    IconShield,
 } from "@tabler/icons-react";
 
-import EmptyState from "@/Components/Dashboard/EmptyState";
-import RoleCard from "@/Components/Dashboard/RoleCard";
-import PerPage from "@/Components/Dashboard/PerPage";
+import {
+    PageContainer,
+    ResourceToolbar,
+    Button,
+    Input,
+    ListBox,
+    Modal,
+    Pagination,
+    EmptyState,
+    RoleCard
+} from "@/Components/Dashboard";
 
 export default function Index() {
     const { roles, permissions, errors } = usePage().props;
@@ -93,58 +92,29 @@ export default function Index() {
     };
 
     return (
-        <>
+        <PageContainer
+            title="Akses Group"
+            description={`${roles.total || roles.data?.length || 0} group terdaftar`}
+            icon={<IconUserShield size={28} className="text-primary-500" />}
+            actions={
+                canCreateRoles && (
+                    <Button
+                        type={"button"}
+                        icon={<IconCirclePlus size={18} strokeWidth={1.5} />}
+                        className={"bg-primary-500 hover:bg-primary-600 text-white shadow-lg shadow-primary-500/30"}
+                        label={"Tambah Group"}
+                        onClick={() => setData("isOpen", true)}
+                    />
+                )
+            }
+        >
             <Head title="Akses Group" />
 
-            {/* Header */}
-            <div className="mb-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <IconUserShield
-                                size={28}
-                                className="text-primary-500"
-                            />
-                            Akses Group
-                        </h1>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {roles.total || roles.data?.length || 0} group
-                            terdaftar
-                        </p>
-                    </div>
-                    {canCreateRoles && (
-                        <Button
-                            type={"button"}
-                            icon={
-                                <IconCirclePlus
-                                    size={18}
-                                    strokeWidth={1.5}
-                                />
-                            }
-                            className={
-                                "bg-primary-500 hover:bg-primary-600 text-white shadow-lg shadow-primary-500/30"
-                            }
-                            label={"Tambah Group"}
-                            onClick={() => setData("isOpen", true)}
-                        />
-                    )}
-                </div>
-            </div>
+            <ResourceToolbar 
+                url={route("roles.index")}
+                searchPlaceholder="Cari akses group..."
+            />
 
-            {/* Search and PerPage */}
-            <div className="mb-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                <div className="w-full sm:w-80">
-                    <Search
-                        url={route("roles.index")}
-                        placeholder="Cari akses group..."
-                    />
-                </div>
-                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto">
-                    <PerPage url={route("roles.index")} />
-                </div>
-            </div>
-
-            {/* Modal */}
             <Modal
                 show={data.isOpen}
                 onClose={() =>
@@ -192,7 +162,6 @@ export default function Index() {
                 </form>
             </Modal>
 
-            {/* Content */}
             {roles.data.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {roles.data.map((role) => (
@@ -225,7 +194,7 @@ export default function Index() {
             )}
 
             {roles.last_page !== 1 && <Pagination links={roles.links} />}
-        </>
+        </PageContainer>
     );
 }
 

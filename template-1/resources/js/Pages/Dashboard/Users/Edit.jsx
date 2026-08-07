@@ -1,18 +1,20 @@
-import React from "react";
-import { Head, usePage, useForm, Link } from "@inertiajs/react";
+import React, { useState } from "react";
 import DashboardLayout from "@/Layouts/DashboardLayout";
+import { Head, usePage, useForm } from "@inertiajs/react";
 import {
     IconUserEdit,
-    IconDeviceFloppy,
-    IconArrowLeft,
     IconShield,
+    IconBuildingHospital
 } from "@tabler/icons-react";
-import Input from "@/Components/Dashboard/Input";
-import Checkbox from "@/Components/Dashboard/Checkbox";
-import FormContainer from "@/Components/Dashboard/FormContainer";
-import SearchableSelect from "@/Components/Dashboard/SearchableSelect";
+import { 
+    FormContainer, 
+    Input, 
+    SectionCard, 
+    AvatarUploader, 
+    RolePicker, 
+    SearchableSelect 
+} from "@/Components/Dashboard";
 import toast from "react-hot-toast";
-import { useState } from "react";
 
 export default function Edit() {
     const { roles, units, user, multipleDepartments } = usePage().props;
@@ -31,12 +33,13 @@ export default function Edit() {
 
     const [avatarPreview, setAvatarPreview] = useState(user.avatar || null);
 
-    const setSelectedRoles = (e) => {
+    const handleRoleChange = (e) => {
+        const value = e.target.value;
         let items = [...data.selectedRoles];
-        if (items.includes(e.target.value)) {
-            items = items.filter((name) => name !== e.target.value);
+        if (items.includes(value)) {
+            items = items.filter((name) => name !== value);
         } else {
-            items.push(e.target.value);
+            items.push(value);
         }
         setData("selectedRoles", items);
     };
@@ -67,58 +70,28 @@ export default function Edit() {
                 Mengubah data untuk pengguna <strong>{user.name}</strong>
             </p>
 
-            {/* Account Info */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                    Informasi Akun
-                </h3>
+            <SectionCard title="Informasi Akun" className="mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Avatar
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden flex items-center justify-center text-slate-600 font-semibold">
-                                {avatarPreview ? (
-                                    <img
-                                        src={avatarPreview}
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <span>
-                                        {user.name
-                                            ? user.name
-                                                  .charAt(0)
-                                                  .toUpperCase()
-                                            : "?"}
-                                    </span>
-                                )}
-                            </div>
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        setData("avatar", file);
-                                        setAvatarPreview(
-                                            URL.createObjectURL(file)
-                                        );
-                                    }
-                                }}
-                                errors={errors.avatar}
-                            />
-                        </div>
+                    <div className="md:col-span-2 mb-2">
+                        <AvatarUploader 
+                            name={data.name}
+                            preview={avatarPreview}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    setData("avatar", file);
+                                    setAvatarPreview(URL.createObjectURL(file));
+                                }
+                            }}
+                            error={errors.avatar}
+                        />
                     </div>
                     <Input
                         type="text"
                         label="Nama Lengkap"
                         placeholder="Nama pengguna"
                         value={data.name}
-                        onChange={(e) =>
-                            setData("name", e.target.value)
-                        }
+                        onChange={(e) => setData("name", e.target.value)}
                         errors={errors.name}
                     />
                     <Input
@@ -126,30 +99,25 @@ export default function Edit() {
                         label="NIP"
                         placeholder="Misal: 1261.78612"
                         value={data.nip}
-                        onChange={(e) =>
-                            setData("nip", e.target.value)
-                        }
+                        onChange={(e) => setData("nip", e.target.value)}
                         errors={errors.nip}
                     />
                     <Input
                         type="email"
                         label="Email"
                         value={data.email}
-                        onChange={(e) =>
-                            setData("email", e.target.value)
-                        }
+                        onChange={(e) => setData("email", e.target.value)}
                         errors={errors.email}
                         disabled
                         className="opacity-60"
                     />
+                    <div className="hidden md:block"></div>
                     <Input
                         type="password"
                         label="Kata Sandi Baru"
                         placeholder="Kosongkan jika tidak diubah"
                         value={data.password}
-                        onChange={(e) =>
-                            setData("password", e.target.value)
-                        }
+                        onChange={(e) => setData("password", e.target.value)}
                         errors={errors.password}
                     />
                     <Input
@@ -157,58 +125,22 @@ export default function Edit() {
                         label="Konfirmasi Kata Sandi"
                         placeholder="Ulangi kata sandi baru"
                         value={data.password_confirmation}
-                        onChange={(e) =>
-                            setData(
-                                "password_confirmation",
-                                e.target.value
-                            )
-                        }
+                        onChange={(e) => setData("password_confirmation", e.target.value)}
                         errors={errors.password_confirmation}
                     />
                 </div>
-            </div>
+            </SectionCard>
 
-            {/* Roles */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 mt-6">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-                    <IconShield size={16} />
-                    Akses Group
-                </h3>
-                <div className="flex flex-wrap gap-4">
-                    {roles.map((role, i) => (
-                        <label
-                            key={i}
-                            className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
-                                data.selectedRoles.includes(role.name)
-                                    ? "border-primary-500 bg-primary-50 dark:bg-primary-950/50"
-                                    : "border-slate-200 dark:border-slate-700 hover:border-primary-300"
-                            }`}
-                        >
-                            <Checkbox
-                                value={role.name}
-                                onChange={setSelectedRoles}
-                                checked={data.selectedRoles.includes(
-                                    role.name
-                                )}
-                            />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 capitalize">
-                                {role.name}
-                            </span>
-                        </label>
-                    ))}
-                </div>
-                {errors.selectedRoles && (
-                    <p className="text-xs text-danger-500 mt-3">
-                        {errors.selectedRoles}
-                    </p>
-                )}
-            </div>
+            <SectionCard title="Akses Group" icon={<IconShield size={18} />} className="mb-6">
+                <RolePicker 
+                    roles={roles}
+                    selected={data.selectedRoles}
+                    onChange={handleRoleChange}
+                    error={errors.selectedRoles}
+                />
+            </SectionCard>
 
-            {/* Units */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 mt-4">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-                    Departemen / Unit Kerja
-                </h3>
+            <SectionCard title="Departemen / Unit Kerja" icon={<IconBuildingHospital size={18} />}>
                 <div className="max-w-xl">
                     <SearchableSelect
                         options={units?.map(u => ({ id: u.id, name: u.unit_name })) || []}
@@ -219,11 +151,9 @@ export default function Edit() {
                     />
                 </div>
                 {errors.selectedUnits && (
-                    <p className="text-xs text-danger-500 mt-3">
-                        {errors.selectedUnits}
-                    </p>
+                    <p className="text-xs text-danger-500 mt-3">{errors.selectedUnits}</p>
                 )}
-            </div>
+            </SectionCard>
         </FormContainer>
     );
 }

@@ -74,20 +74,20 @@ class UnitController extends Controller implements HasMiddleware
     public function store(UnitRequest $request)
     {
         Unit::create($request->validated());
-        return redirect()->route('units.index')->with('message', 'Departemen berhasil ditambahkan.');
+        return back()->with('message', 'Departemen berhasil ditambahkan.');
     }
 
     public function update(UnitRequest $request, Unit $unit)
     {
         $this->authorize('update', $unit);
         $unit->update($request->validated());
-        return redirect()->route('units.index')->with('message', 'Departemen berhasil diperbarui.');
+        return back()->with('message', 'Departemen berhasil diperbarui.');
     }
 
     public function destroy(Unit $unit)
     {
         $this->authorize('delete', $unit);
         $unit->delete();
-        return redirect()->route('units.index')->with('message', 'Departemen berhasil dihapus.');
+        return back()->with('message', 'Departemen berhasil dihapus.');
     }
 }

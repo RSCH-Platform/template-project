@@ -21,6 +21,8 @@ export default function useDeleteConfirm() {
 
         if (result.isConfirmed) {
             destroy(url, {
+                preserveState: true,
+                preserveScroll: true,
                 onSuccess: () => {
                     Swal.fire({
                         title: 'Berhasil!',

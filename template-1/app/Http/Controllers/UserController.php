@@ -70,7 +70,7 @@ class UserController extends Controller
         $this->service->store($request->validated(), $request->file('avatar'));
 
         // render view
-        return to_route('users.index');
+        return back()->with('message', 'Pengguna berhasil ditambahkan.');
     }
 
     /**
@@ -113,7 +113,7 @@ class UserController extends Controller
         $this->service->update($user, $request->validated(), $request->file('avatar'));
 
         // render view
-        return to_route('users.index');
+        return back()->with('message', 'Pengguna berhasil diperbarui.');
     }
 
     /**

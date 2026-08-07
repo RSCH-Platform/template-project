@@ -29,14 +29,18 @@ export default function Button({
             cancelButtonText: "Batal",
         }).then((result) => {
             if (result.isConfirmed) {
-                destroy(url);
-
-                Swal.fire({
-                    title: "Berhasil!",
-                    text: "Data berhasil dihapus!",
-                    icon: "success",
-                    showConfirmButton: false,
-                    timer: 1500,
+                destroy(url, {
+                    preserveState: true,
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire({
+                            title: "Berhasil!",
+                            text: "Data berhasil dihapus!",
+                            icon: "success",
+                            showConfirmButton: false,
+                            timer: 1500,
+                        });
+                    },
                 });
             }
         });

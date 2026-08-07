@@ -2,6 +2,7 @@ import React from "react";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { useAuthorization } from "@/Utils/authorization";
+import useDeleteConfirm from "@/Hooks/useDeleteConfirm";
 import {
     IconDatabaseOff,
     IconCirclePlus,
@@ -33,7 +34,6 @@ export default function Index() {
         setData,
         transform,
         post,
-        delete: destroy,
     } = useForm({
         id: "",
         name: "",
@@ -41,6 +41,8 @@ export default function Index() {
         isUpdate: false,
         isOpen: false,
     });
+
+    const { confirmDelete } = useDeleteConfirm();
 
     const setSelectedPermission = (value) =>
         setData("selectedPermission", value);
@@ -56,6 +58,8 @@ export default function Index() {
     const saveRole = async (e) => {
         e.preventDefault();
         post(route("roles.store"), {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () =>
                 setData({ selectedPermission: [], name: "", isOpen: false }),
         });
@@ -64,6 +68,8 @@ export default function Index() {
     const updateRole = async (e) => {
         e.preventDefault();
         post(route("roles.update", data.id), {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () =>
                 setData({
                     id: "",
@@ -86,9 +92,7 @@ export default function Index() {
     };
 
     const handleDelete = (roleId) => {
-        if (confirm("Hapus role ini?")) {
-            destroy(route("roles.destroy", roleId));
-        }
+        confirmDelete(route("roles.destroy", roleId));
     };
 
     return (

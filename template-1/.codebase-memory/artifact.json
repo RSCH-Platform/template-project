@@ -1,0 +1,11 @@
+{
+    "schema_version": 1,
+    "commit": "3cef2ade7c60d48a83dd3a85ec6cacd1af970864",
+    "indexed_at": "2026-08-07T23:44:30Z",
+    "project": "home-it_support-projects-rsch-template-template-1",
+    "nodes": 5856,
+    "edges": 24496,
+    "original_size": 15073280,
+    "compressed_size": 3121170,
+    "compression_level": 9
+}

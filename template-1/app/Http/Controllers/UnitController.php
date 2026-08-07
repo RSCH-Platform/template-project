@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use App\Http\Requests\UnitRequest;
+use App\Http\Requests\SyncUnitUsersRequest;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Resources\UnitResource;
@@ -51,13 +52,10 @@ class UnitController extends Controller implements HasMiddleware
         ]);
     }
 
-    public function syncUsers(Request $request, Unit $unit)
+    public function syncUsers(SyncUnitUsersRequest $request, Unit $unit)
     {
         $this->authorize('update', $unit);
-        $validated = $request->validate([
-            'user_ids' => 'array',
-            'user_ids.*' => 'integer|exists:users,id'
-        ]);
+        $validated = $request->validated();
 
         $unit->users()->sync($validated['user_ids'] ?? []);
 

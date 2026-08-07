@@ -13,9 +13,21 @@ use App\Models\Unit;
 use App\Http\Resources\UserResource;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:users-access', only: ['index']),
+            new Middleware('permission:users-create', only: ['create', 'store']),
+            new Middleware('permission:users-update', only: ['edit', 'update']),
+            new Middleware('permission:users-delete', only: ['destroy']),
+        ];
+    }
+
     public function __construct(private UserService $service)
     {
     }

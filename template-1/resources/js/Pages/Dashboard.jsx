@@ -5,7 +5,7 @@ import SuperAdminDashboard from './Dashboard/SuperAdminDashboard';
 import KepalaRuanganDashboard from './Dashboard/KepalaRuanganDashboard';
 import PerawatDashboard from './Dashboard/PerawatDashboard';
 import DefaultDashboard from './Dashboard/DefaultDashboard';
-import { Head } from '@inertiajs/react';
+import { Head, Deferred } from '@inertiajs/react';
 
 export default function Dashboard() {
     const { canAny } = useAuthorization();
@@ -13,15 +13,17 @@ export default function Dashboard() {
     return (
         <>
             <Head title='Dashboard' />
-            {canAny(['users-access', 'roles-access']) ? (
-                <SuperAdminDashboard />
-            ) : canAny(['units-access-owned']) ? (
-                <KepalaRuanganDashboard />
-            ) : canAny(['dashboard-access']) ? (
-                <PerawatDashboard />
-            ) : (
-                <DefaultDashboard />
-            )}
+            <Deferred data={['chart_labels', 'chart_data', 'super_admin_data', 'kepala_data']} fallback={<div className="p-6 text-center text-slate-500">Memuat dashboard...</div>}>
+                {canAny(['users-access', 'roles-access']) ? (
+                    <SuperAdminDashboard />
+                ) : canAny(['units-access-owned']) ? (
+                    <KepalaRuanganDashboard />
+                ) : canAny(['dashboard-access']) ? (
+                    <PerawatDashboard />
+                ) : (
+                    <DefaultDashboard />
+                )}
+            </Deferred>
         </>
     );
 }

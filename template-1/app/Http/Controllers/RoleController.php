@@ -12,9 +12,21 @@ use Spatie\Permission\Models\Role;
 use App\Http\Resources\RoleResource;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class RoleController extends Controller
+class RoleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:roles-access', only: ['index']),
+            new Middleware('permission:roles-create', only: ['create', 'store']),
+            new Middleware('permission:roles-update', only: ['edit', 'update']),
+            new Middleware('permission:roles-delete', only: ['destroy']),
+        ];
+    }
+
     public function __construct()
     {
     }

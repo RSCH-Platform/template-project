@@ -3,6 +3,7 @@ import AppLayout from '@/Layouts/DashboardLayout';
 import Swal from 'sweetalert2';
 import { useAuthorization } from '@/Utils/authorization';
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import axios from 'axios';
 import { IconBuilding, IconTrash, IconEdit, IconUsers, IconX } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
 import {
@@ -73,17 +74,20 @@ export default function Index({ units, all_users }) {
         setShowUsersModal(true);
     };
 
-    const handleSyncUsers = (newIds) => {
+    const handleSyncUsers = async (newIds) => {
         setSelectedUserIds(newIds);
         setSyncProcessing(true);
-        router.post(route('units.users.sync', selectedUnit.id), { user_ids: newIds }, {
-            preserveScroll: true,
-            preserveState: true,
-            onFinish: () => setSyncProcessing(false),
-            onSuccess: () => {
-                toast.success('Pengguna departemen berhasil diperbarui');
-            },
-        });
+        try {
+            await axios.post(route('units.users.sync', selectedUnit.id), { user_ids: newIds });
+            toast.success('Pengguna departemen berhasil diperbarui');
+            
+            // Optionally update the local unit data in the list if needed, 
+            // but the modal state is already updated via setSelectedUserIds
+        } catch (e) {
+            toast.error('Gagal memperbarui pengguna');
+        } finally {
+            setSyncProcessing(false);
+        }
     };
 
     return (

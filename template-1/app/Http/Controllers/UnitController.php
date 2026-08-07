@@ -54,6 +54,12 @@ class UnitController extends Controller implements HasMiddleware
 
         $unit->users()->sync($validated['user_ids'] ?? []);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Pengguna departemen berhasil diperbarui.',
+                'user_ids' => $validated['user_ids'] ?? [],
+            ]);
+        }
         return back()->with('message', 'Pengguna departemen berhasil diperbarui.');
     }
 

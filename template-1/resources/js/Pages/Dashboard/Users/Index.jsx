@@ -109,34 +109,32 @@ export default function Index() {
                 <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
                     <PerPage url={route("users.index")} />
                     <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setViewMode("grid")}
-                        className={`p-2.5 rounded-lg transition-colors ${
-                            viewMode === "grid"
+                        <button
+                            onClick={() => setViewMode("grid")}
+                            className={`p-2.5 rounded-lg transition-colors ${viewMode === "grid"
                                 ? "bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400"
                                 : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                    >
-                        <IconLayoutGrid size={20} />
-                    </button>
-                    <button
-                        onClick={() => setViewMode("list")}
-                        className={`p-2.5 rounded-lg transition-colors ${
-                            viewMode === "list"
+                                }`}
+                        >
+                            <IconLayoutGrid size={20} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode("list")}
+                            className={`p-2.5 rounded-lg transition-colors ${viewMode === "list"
                                 ? "bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400"
                                 : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                    >
-                        <IconList size={20} />
-                    </button>
+                                }`}
+                        >
+                            <IconList size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {/* Content */}
+            {/* Content */}
             {users.data.length > 0 ? (
                 viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
                         {users.data.map((user) => (
                             <UserCard
                                 key={user.id}
@@ -207,9 +205,9 @@ export default function Index() {
                                         <Table.Td className={"text-center"}>
                                             {++i +
                                                 (users.current_page - 1) *
-                                                    users.per_page}
+                                                users.per_page}
                                         </Table.Td>
-                                    <Table.Td>
+                                        <Table.Td>
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                                     {user.avatar ? (
@@ -235,25 +233,30 @@ export default function Index() {
                                             </div>
                                         </Table.Td>
                                         <Table.Td>
-                                            <div className="flex flex-wrap gap-1">
-                                                {user.roles.map((role, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-accent-100 dark:bg-accent-900/50 text-accent-700 dark:text-accent-400"
-                                                    >
-                                                        <IconShield size={12} />
-                                                        {role.name}
-                                                    </span>
-                                                ))}
-                                                {user.units?.map((unit, index) => (
-                                                    <span
-                                                        key={`unit-${index}`}
-                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-info-100 dark:bg-info-900/50 text-info-700 dark:text-info-400"
-                                                    >
-                                                        <IconBuildingHospital size={12} />
-                                                        {unit.unit_name}
-                                                    </span>
-                                                ))}
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {user.roles.map((role, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-accent-100 dark:bg-accent-900/50 text-accent-700 dark:text-accent-400"
+                                                        >
+                                                            <IconShield size={12} />
+                                                            {role.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-1">
+                                                    {user.units?.map((unit, index) => (
+                                                        <span
+                                                            key={`unit-${index}`}
+                                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-info-100 dark:bg-info-900/50 text-info-700 dark:text-info-400"
+                                                        >
+                                                            <IconBuildingHospital size={12} />
+                                                            {unit.unit_name}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </Table.Td>
                                         <Table.Td>
